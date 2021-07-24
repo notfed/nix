@@ -3,9 +3,10 @@ let
   settings = import ./config;
   editor = "vim";
 in {
-  imports = [ ./vim.nix ./zsh.nix ];
+  imports = [ ./zsh.nix ];
 
   programs.home-manager.enable = true;
+  nixpkgs.config.allowUnfree = true;
 
   home.packages = with pkgs; [
 
@@ -39,7 +40,7 @@ in {
     byobu tmux screen coreutils-prefixed
 
     # desktop
-    chrome-desktop
+    google-chrome
     redshift
 
   ];
