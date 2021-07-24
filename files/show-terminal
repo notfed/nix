@@ -1,2 +1,2 @@
 #!/bin/sh
-xdotool search --class '^Alacritty$' windowactivate || alacritty -e byobu
+xdotool search --class '^Alacritty$' windowactivate || alacritty -t "Alacritty" -e byobu
