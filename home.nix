@@ -1,0 +1,93 @@
+{ config, pkgs, ... }:
+let
+  settings = import ./config;
+  editor = "vim";
+in {
+  imports = [ ./vim.nix ./zsh.nix ];
+
+  programs.home-manager.enable = true;
+
+  home.packages = with pkgs; [
+
+    # dev tools
+    git
+    vscode jetbrains.clion jetbrains.idea-ultimate
+    clang-tools automake autoconf gnutar gzip gnumake binutils-unwrapped coreutils gawk gnused gnugrep
+    cmake
+    ctags
+    gdb
+    gnumake
+    rustup
+
+    # Python
+    pipenv
+    python3
+
+    # CLI
+    alacritty
+    exa
+    fd
+    file
+    fzf
+    ripgrep
+    tree
+    unzip
+    xclip
+    zip
+    autojump
+    oh-my-zsh zsh-autosuggestions zsh-syntax-highlighting
+    byobu tmux screen coreutils-prefixed
+
+    # desktop
+    chrome-desktop
+    redshift
+
+  ];
+
+  programs.direnv = { enable = true; };
+
+  programs.git = {
+    enable = true;
+    userEmail = "jaysullivan@google.com";
+    userName = "Jay Sullivan";
+
+    extraConfig = {
+      merge = { ff = "only"; };
+    };
+
+    ignores = [
+      "*~"
+      "*.swp"
+      ".ccls-cache"
+      "*.pdf"
+      "compile_commands.json"
+      "shell.nix"
+    ];
+  };
+
+  programs.vim = {
+    enable = true;
+    settings = { 
+        tabstop = 4;
+        shiftwidth = 4; 
+        expandtab = true; 
+    };
+  };
+
+  services.redshift = {
+    enable = true;
+    latitude = "48.853";
+    longitude = "2.35";
+    temperature.night = 3000;
+    temperature.day = 5000;
+  };
+
+  home.file.".local/bin/hello-world-test".source = ./files/hello-world-test;
+  #home.file.".config/alacritty/alacritty.yml".source = ./files/alacritty.yml;
+
+  home.sessionVariables = {
+    EDITOR = "${editor}";
+    PATH =
+      "$HOME/.config/zsh/scripts:$HOME/.cargo/bin:$PATH";
+  };
+}
