@@ -95,5 +95,6 @@ in {
     EDITOR = "${editor}";
     BYOBU_BACKEND = "tmux";
     PATH = "$HOME/.local/bin:$HOME/.cargo/bin:$PATH";
+    NIX_PATH = "$HOME/.nix-defexpr/channels:$NIX_PATH";
   };
 }
