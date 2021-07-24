@@ -21,7 +21,7 @@
   # boot.loader.grub.efiInstallAsRemovable = true;
   # boot.loader.efi.efiSysMountPoint = "/boot/efi";
   # Define on which hard drive you want to install Grub.
-  boot.loader.grub.device = "/dev/sdb"; # or "nodev" for efi only
+  boot.loader.grub.device = "nodev"; #"/dev/sdb"; # or "nodev" for efi only
   #boot.loader.systemd-boot.enable = true;
 
   # networking.hostName = "nixos"; # Define your hostname.
@@ -76,6 +76,7 @@
   nixpkgs.config.allowUnfree = true;
   
 	  environment.systemPackages = with pkgs; [
+              google-chrome
 	      gparted
 	      wget file
 	      #git
@@ -99,19 +100,21 @@
   };
 
   # Vim
+  /*
   environment.etc."vimrc".text = ''
     set tabstop 4
     set shiftwidth 4
     set expandtab
   '';
   programs.vim.defaultEditor = true;
+  */
 
   # Other progs
-  programs.autojump.enable = true;
+  #programs.autojump.enable = true;
   environment.variables.BYOBU_BACKEND = "tmux";
 
   # Zsh plugins
-  systemd.services.nixos-upgrade.path = [ pkgs.git ];
+  #systemd.services.nixos-upgrade.path = [ pkgs.git ];
 /*
   programs.zsh = {
       enable = true;
