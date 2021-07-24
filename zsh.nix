@@ -11,6 +11,12 @@
       ls = "exa";
     };
 
+    oh-my-zsh = {
+      enable = true;
+      plugins = [ "git" ];
+      theme = "amuse";
+    };
+    
     plugins = with pkgs; [
       {
         name = "zsh-syntax-highlighting";

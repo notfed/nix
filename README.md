@@ -25,6 +25,10 @@ Updating:
 
     home-manager switch
 
+WTF HOW DO I DO THIS Post-install step:
+
+    cp ./files/amuse-jay.zsh-theme $ZSH/themes/
+
 # Other
 
 https://github.com/Yumasi/nixos-home

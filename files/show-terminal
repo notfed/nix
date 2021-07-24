@@ -1,0 +1,2 @@
+#!/bin/sh
+xdotool search --class '^Alacritty$' windowactivate || alacritty -e byobu

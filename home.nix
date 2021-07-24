@@ -25,7 +25,7 @@ in {
     python3
 
     # CLI
-    alacritty
+    alacritty xdotool
     exa
     fd
     file
@@ -36,7 +36,7 @@ in {
     xclip
     zip
     autojump
-    oh-my-zsh zsh-autosuggestions zsh-syntax-highlighting
+    oh-my-zsh zsh-autosuggestions zsh-syntax-highlighting zsh-command-time
     byobu tmux screen coreutils-prefixed
 
     # desktop
@@ -44,6 +44,8 @@ in {
     redshift
 
   ];
+
+  programs.autojump.enable = true;
 
   programs.direnv = { enable = true; };
 
@@ -83,12 +85,15 @@ in {
     temperature.day = 5000;
   };
 
-  home.file.".local/bin/hello-world-test".source = ./files/hello-world-test;
-  #home.file.".config/alacritty/alacritty.yml".source = ./files/alacritty.yml;
+  home.file.".local/bin/show-terminal".source = ./files/show-terminal;
+  home.file.".byobu/.tmux.conf".source = ./files/tmux.conf;
+
+  # ?????? HOW DO WE DEPLOY A CUSTOM THEME ???????
+  #file."$ZSH/themes/amuse-jay.zsh-theme".source = ./files/amuse-jay.zsh-theme;
 
   home.sessionVariables = {
     EDITOR = "${editor}";
-    PATH =
-      "$HOME/.config/zsh/scripts:$HOME/.cargo/bin:$PATH";
+    BYOBU_BACKEND = "tmux";
+    PATH = "$HOME/.local/bin:$HOME/.cargo/bin:$PATH";
   };
 }
