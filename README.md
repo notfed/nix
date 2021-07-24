@@ -25,3 +25,6 @@ Updating:
 
     home-manager switch
 
+# Other
+
+https://github.com/Yumasi/nixos-home
