@@ -3,11 +3,11 @@
 
 Configuring:
 
-    sudo code /etc/nixos/configuration.nix 
+    sudo vi /etc/nixos/configuration.nix 
 
 Updating:
 
-    nixos-rebuild switch
+    sudo nixos-rebuild switch
 
 # NixOS Home Manager
 
@@ -19,7 +19,7 @@ Installing:
 
 Configuring:
 
-  code ~/.config/nixpkgs/home.nix
+  vi ~/.config/nixpkgs/home.nix
 
 Updating:
 
