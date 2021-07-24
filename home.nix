@@ -87,6 +87,7 @@ in {
 
   home.file.".local/bin/show-terminal".source = ./files/show-terminal;
   home.file.".byobu/.tmux.conf".source = ./files/tmux.conf;
+  home.file.".local/share/zsh-themes/amuse-jay.zsh-theme".source = ./files/amuse-jay.zsh-theme;
 
   # ?????? HOW DO WE DEPLOY A CUSTOM THEME ???????
   #file."$ZSH/themes/amuse-jay.zsh-theme".source = ./files/amuse-jay.zsh-theme;
