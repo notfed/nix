@@ -6,25 +6,22 @@
 
 {
   imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-
-  # Home Manager
-     #(import "${builtins.fetchTarball https://github.com/rycee/home-manager/archive/master.tar.gz}/nixos")
-     #imports = [ <home-manager/nixos> ];
-  ];
+    [ 
+        # Include the results of the hardware scan.
+      	./hardware-configuration.nix
+    ];
 
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
   boot.loader.grub.version = 2;
-  #boot.loader.grub.efiSupport = true;
+  boot.loader.grub.device = "nodev"; #"/dev/sdb"; # or "nodev" for efi only
+  # boot.loader.grub.efiSupport = true;
   # boot.loader.grub.efiInstallAsRemovable = true;
   # boot.loader.efi.efiSysMountPoint = "/boot/efi";
   # Define on which hard drive you want to install Grub.
-  boot.loader.grub.device = "nodev"; #"/dev/sdb"; # or "nodev" for efi only
-  #boot.loader.systemd-boot.enable = true;
+  # boot.loader.systemd-boot.enable = true;
 
-  # networking.hostName = "nixos"; # Define your hostname.
+  networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Set your time zone.
@@ -37,26 +34,16 @@
   networking.interfaces.enp0s31f6.useDHCP = true;
   networking.interfaces.enp9s0.useDHCP = true;
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
-  #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
-  # };
-
+  
   # Enable the X11 windowing system.
   services.xserver.enable = true;
-
 
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
   
-
   # Configure keymap in X11
   # services.xserver.layout = "us";
   # services.xserver.xkbOptions = "eurosign:e";
@@ -68,103 +55,26 @@
   # sound.enable = true;
   # hardware.pulseaudio.enable = true;
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
-  # List packages installed in system profile. To search, run:
-  # $ nix search wget
+  # Packages
   nixpkgs.config.allowUnfree = true;
-  
-	  environment.systemPackages = with pkgs; [
-              google-chrome
-	      gparted
-	      wget file
-	      #git
-	      #google-chrome
-	      vim vim_configurable
-	      #clang automake autoconf gnutar gzip gnumake binutils-unwrapped coreutils gawk gnused gnugrep
-	      #vscode jetbrains.clion jetbrains.idea-ultimate
-	      zsh #oh-my-zsh zsh-autosuggestions zsh-syntax-highlighting
-	      #alacritty
-	      #byobu tmux screen coreutils-prefixed
-	      #autojump
-	      #dbus dconf
-	  ];
+
+  environment.systemPackages = with pkgs; [
+      gparted parted
+      wget file
+      vim vim_configurable
+      zsh
+  ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jay = {
       isNormalUser = true;
       home = "/home/jay";
-      extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+      extraGroups = [ "wheel" ];
       shell = pkgs.zsh;
   };
 
-  # Vim
-  /*
-  environment.etc."vimrc".text = ''
-    set tabstop 4
-    set shiftwidth 4
-    set expandtab
-  '';
-  programs.vim.defaultEditor = true;
-  */
-
-  # Other progs
-  #programs.autojump.enable = true;
-  environment.variables.BYOBU_BACKEND = "tmux";
-
-  # Zsh plugins
-  #systemd.services.nixos-upgrade.path = [ pkgs.git ];
-/*
-  programs.zsh = {
-      enable = true;
-      syntaxHighlighting.enable = true;
-  };
-  programs.zsh.ohMyZsh = {
-      enable = true;
-      plugins = [ "git" ];
-      theme = "amuse";
-      customPkgs = [  ];
-  };
-  programs.zsh.autosuggestions.enable = true;
-*/
-
   # Dbus (for Gnome Keyboard Shortcuts)
-  services.dbus.packages = [ pkgs.gnome3.dconf ]; 
-
-  # Gnome Keyboard Shortcuts
-    services.xserver.desktopManager.gnome = {
-    extraGSettingsOverridePackages = with pkgs; [ gnome3.gnome-settings-daemon ];
-    extraGSettingsOverrides = ''
-      [org.gnome.settings-daemon.plugins.media-keys]
-      custom-keybindings=['/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/']
-
-
-      [org.gnome.settings-daemon.plugins.media-keys.custom-keybindings.custom0]
-      binding='<Primary><Alt>r'
-      command='alacritty'
-      name='open-terminal'
-    '';
-  };
-
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
-  # programs.mtr.enable = true;
-  # programs.gnupg.agent = {
-  #   enable = true;
-  #   enableSSHSupport = true;
-  # };
-
-  # List services that you want to enable:
-
-  # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
+  # services.dbus.packages = [ pkgs.gnome3.dconf ]; 
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
@@ -175,4 +85,3 @@
   system.stateVersion = "21.05"; # Did you read the comment?
 
 }
-

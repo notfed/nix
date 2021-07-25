@@ -3,29 +3,26 @@ let
   settings = import ./config;
   editor = "vim";
 in {
+  # -------- Imports --------
+
   imports = [ ./zsh.nix ];
 
-  programs.home-manager.enable = true;
-  nixpkgs.config.allowUnfree = true;
+  # -------- Packages --------
 
+  nixpkgs.config.allowUnfree = true;
   home.packages = with pkgs; [
 
-    # dev tools
+    # ---- Dev Tools ---- 
     git
     vscode jetbrains.clion jetbrains.idea-ultimate
-    clang-tools automake autoconf gnutar gzip gnumake binutils-unwrapped coreutils gawk gnused gnugrep
-    cmake
-    ctags
-    gdb
-    gnumake
+    clang-tools automake autoconf gnutar gzip gnumake binutils-unwrapped
+    gawk gnused gnugrep cmake gdb gnumake  coreutils-full
     rustup
+    pipenv python3
 
-    # Python
-    pipenv
-    python3
-
-    # CLI
-    alacritty xdotool
+    # ---- CLI ---- 
+    alacritty 
+    xdotool
     exa
     fd
     file
@@ -37,17 +34,20 @@ in {
     zip
     autojump
     oh-my-zsh zsh-autosuggestions zsh-syntax-highlighting zsh-command-time
-    byobu tmux screen coreutils-prefixed
+    byobu tmux screen
+    hyperfine
 
-    # desktop
+    # ---- Desktop ----
     google-chrome
     redshift
+    gimp imagemagick exiftool
 
   ];
-
+  programs.home-manager.enable = true;
   programs.autojump.enable = true;
+  programs.direnv.enable = true;
 
-  programs.direnv = { enable = true; };
+  # -------- Configuration  --------
 
   programs.git = {
     enable = true;
@@ -57,15 +57,6 @@ in {
     extraConfig = {
       merge = { ff = "only"; };
     };
-
-    ignores = [
-      "*~"
-      "*.swp"
-      ".ccls-cache"
-      "*.pdf"
-      "compile_commands.json"
-      "shell.nix"
-    ];
   };
 
   programs.vim = {
@@ -79,19 +70,24 @@ in {
 
   services.redshift = {
     enable = true;
-    latitude = "48.853";
-    longitude = "2.35";
+    latitude = "40.4173";
+    longitude = "-82.9071";
     temperature.night = 3000;
     temperature.day = 5000;
   };
+
+  # -------- Custom Files  --------
 
   home.file.".local/bin/show-terminal".source = ./files/show-terminal;
   home.file.".byobu/.tmux.conf".source = ./files/tmux.conf;
   home.file.".local/share/zsh-themes/amuse-jay.zsh-theme".source = ./files/amuse-jay.zsh-theme;
 
-  # ?????? HOW DO WE DEPLOY A CUSTOM THEME ???????
-  #file."$ZSH/themes/amuse-jay.zsh-theme".source = ./files/amuse-jay.zsh-theme;
+  # -------- TODO  --------
 
+  # - How to use ".local/share/zsh-themes/amuse-jay.zsh-theme" as zsh-theme?
+  # - How to set GNOME key binding?
+
+  # -------- Environment Variables  --------
   home.sessionVariables = {
     EDITOR = "${editor}";
     BYOBU_BACKEND = "tmux";

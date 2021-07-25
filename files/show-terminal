@@ -1,2 +1,4 @@
 #!/bin/sh
-xdotool search --class '^Alacritty$' windowactivate || alacritty -t "Alacritty" -e byobu
+[ "${FLOCKER}" != "$0" ] && exec env FLOCKER="$0" flock -en "$0" "$0" "$@" || :
+alacritty -t "Alacritty" -e byobu
+#xdotool search --class '^Alacritty$' windowactivate || alacritty -t "Alacritty" -e byobu

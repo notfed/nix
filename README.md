@@ -1,3 +1,15 @@
+# Installing from scratch
+
+## Create partitions
+
+parted --script /dev/sdz \
+    mklabel gpt \
+    mkpart primary 1MiB 100MiB \
+    mkpart primary 100MiB 200MiB \
+
+## Log in as root and set user password
+
+passwd jay
 
 # NixOS
 
