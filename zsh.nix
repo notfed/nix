@@ -14,7 +14,8 @@
     oh-my-zsh = {
       enable = true;
       plugins = [ "git" ];
-      theme = "amuse";
+      theme = "amuse-jay";
+      custom = "$HOME/.local/share/zsh-custom";
     };
     
     plugins = with pkgs; [

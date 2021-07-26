@@ -80,11 +80,10 @@ in {
 
   home.file.".local/bin/show-terminal".source = ./files/show-terminal;
   home.file.".byobu/.tmux.conf".source = ./files/tmux.conf;
-  home.file.".local/share/zsh-themes/amuse-jay.zsh-theme".source = ./files/amuse-jay.zsh-theme;
+  home.file.".local/share/zsh-custom/themes/amuse-jay.zsh-theme".source = ./files/amuse-jay.zsh-theme;
 
   # -------- TODO  --------
 
-  # - How to use ".local/share/zsh-themes/amuse-jay.zsh-theme" as zsh-theme?
   # - How to set GNOME key binding?
 
   # -------- Environment Variables  --------

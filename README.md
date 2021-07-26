@@ -27,6 +27,7 @@ mount $PARTITION_NIXOS /mnt
 mkdir -p /mnt/boot
 mount $PARTITION_BOOT /mnt/boot
 mkdir -p /mnt/etc/nixos
+nixos-generate-config --root /mnt
 cp configuration.nix /mnt/etc/nixos/configuration.nix
 nixos-install
 
