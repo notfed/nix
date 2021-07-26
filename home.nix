@@ -3,10 +3,6 @@ let
   settings = import ./config;
   editor = "vim";
 in {
-  # -------- Imports --------
-
-  imports = [ ./zsh.nix ];
-
   # -------- Packages --------
 
   nixpkgs.config.allowUnfree = true;
@@ -40,7 +36,7 @@ in {
     # ---- Desktop ----
     google-chrome
     redshift
-    gimp imagemagick exiftool
+    gimp imagemagick
 
   ];
   programs.home-manager.enable = true;
@@ -76,15 +72,60 @@ in {
     temperature.day = 5000;
   };
 
+  programs.zsh = {
+    enable = true;
+    autocd = true;
+    dotDir = ".config/zsh";
+    enableAutosuggestions = true;
+    enableCompletion = true;
+    shellAliases = {
+      ls = "exa";
+    };
+
+    oh-my-zsh = {
+      enable = true;
+      plugins = [ "git" ];
+      theme = "amuse-jay";
+      custom = "$HOME/.local/share/zsh-custom";
+    };
+    
+    plugins = with pkgs; [
+      {
+        name = "zsh-syntax-highlighting";
+        src = fetchFromGitHub {
+          owner = "zsh-users";
+          repo = "zsh-syntax-highlighting";
+          rev = "0.6.0";
+          sha256 = "0zmq66dzasmr5pwribyh4kbkk23jxbpdw4rjxx0i7dx8jjp2lzl4";
+        };
+        file = "zsh-syntax-highlighting.zsh";
+      }
+    ];
+  };
+
+  programs.fzf = {
+    enable = true;
+    enableZshIntegration = true;
+  };
+
+  dconf.settings = {
+    "org/gnome/settings-daemon/plugins/media-keys" = {
+      custom-keybindings = [
+        "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0/"
+      ];
+    };
+    "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/custom0" = {
+      binding = "<Primary><Alt>t";
+      command = "/home/jay/.local/bin/show-terminal";
+      name = "show-terminal";
+    };
+  };
+
   # -------- Custom Files  --------
 
   home.file.".local/bin/show-terminal".source = ./files/show-terminal;
   home.file.".byobu/.tmux.conf".source = ./files/tmux.conf;
   home.file.".local/share/zsh-custom/themes/amuse-jay.zsh-theme".source = ./files/amuse-jay.zsh-theme;
-
-  # -------- TODO  --------
-
-  # - How to set GNOME key binding?
 
   # -------- Environment Variables  --------
   home.sessionVariables = {
