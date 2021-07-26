@@ -14,7 +14,7 @@
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
   boot.loader.grub.version = 2;
-  boot.loader.grub.device = "nodev"; #"/dev/sdb"; # or "nodev" for efi only
+  boot.loader.grub.device = "nodev"; # E.g., "/dev/sdb"; # or "nodev" for efi only
   # boot.loader.grub.efiSupport = true;
   # boot.loader.grub.efiInstallAsRemovable = true;
   # boot.loader.efi.efiSysMountPoint = "/boot/efi";
@@ -49,11 +49,11 @@
   # services.xserver.xkbOptions = "eurosign:e";
 
   # Enable CUPS to print documents.
-  # services.printing.enable = true;
+  services.printing.enable = true;
 
   # Enable sound.
-  # sound.enable = true;
-  # hardware.pulseaudio.enable = true;
+  sound.enable = true;
+  hardware.pulseaudio.enable = true;
 
   # Packages
   nixpkgs.config.allowUnfree = true;
@@ -72,9 +72,6 @@
       extraGroups = [ "wheel" ];
       shell = pkgs.zsh;
   };
-
-  # Dbus (for Gnome Keyboard Shortcuts)
-  # services.dbus.packages = [ pkgs.gnome3.dconf ]; 
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
