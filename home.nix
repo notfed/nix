@@ -123,6 +123,9 @@ in {
     "org/gnome/nautilus/preferences" = {
       "always-use-location-entry" = true;
     };
+    "org/gnome/desktop/interface" = {
+      "enable-hot-corners" = false;
+    };
   };
 
   # -------- Custom Files  --------
