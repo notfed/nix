@@ -31,19 +31,9 @@ nixos-generate-config --root /mnt
 cp configuration.nix /mnt/etc/nixos/configuration.nix
 nixos-install
 
-## Log in as root and set user password
+## Reboot, log in as root, set user password, then log in as user
 
 passwd jay
-
-# NixOS - Configuring
-
-Configuring:
-
-    sudo vi /etc/nixos/configuration.nix 
-
-Updating:
-
-    sudo nixos-rebuild switch
 
 # NixOS Home Manager
 
@@ -61,9 +51,15 @@ Updating:
 
     home-manager switch
 
-WTF HOW DO I DO THIS Post-install step:
+# NixOS - Re-configuring
 
-    cp ./files/amuse-jay.zsh-theme $ZSH/themes/
+Configuring:
+
+    sudo vi /etc/nixos/configuration.nix 
+
+Updating:
+
+    sudo nixos-rebuild switch
 
 # Other
 
