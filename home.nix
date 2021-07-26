@@ -37,6 +37,7 @@ in {
     google-chrome
     redshift
     gimp imagemagick
+    gnome.dconf-editor
 
   ];
   programs.home-manager.enable = true;
@@ -118,6 +119,9 @@ in {
       binding = "<Primary><Alt>t";
       command = "/home/jay/.local/bin/show-terminal";
       name = "show-terminal";
+    };
+    "org/gnome/nautilus/preferences" = {
+      "always-use-location-entry" = true;
     };
   };
 

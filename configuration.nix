@@ -43,6 +43,9 @@
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
   services.xserver.desktopManager.gnome.enable = true;
+
+  # Enable Nvidia drivers
+  services.xserver.videoDrivers = [ "nvidia" ];
   
   # Configure keymap in X11
   # services.xserver.layout = "us";
