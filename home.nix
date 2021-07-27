@@ -34,7 +34,8 @@ in {
     hyperfine
 
     # ---- Desktop ----
-    google-chrome
+    dropbox-cli cryptomator
+    google-chrome firefox-wayland
     redshift
     gimp imagemagick
     gnome.dconf-editor
@@ -71,14 +72,6 @@ in {
     longitude = "-82.9071";
     temperature.night = 3000;
     temperature.day = 5000;
-  };
-
-  services.random-background = {
-    enable = true;
-    imageDirectory = "%h/backgrounds";
-    display = "fill";
-    interval = "1h";
-    enableXinerama = false;
   };
 
   programs.zsh = {
@@ -121,8 +114,11 @@ in {
     "org/gnome/desktop/interface" = {
       "enable-hot-corners" = false;
     };
+    "org/gnome/desktop/background" = {
+      "picture-uri" = "/home/jay/.background-image";
+    };
     "org/gnome/desktop/screensaver" = {
-      "picture-uri" = "/home/jay/bg.gif";
+      "picture-uri" = "/home/jay/.background-image";
     };
   };
 
@@ -131,6 +127,7 @@ in {
   home.file.".local/bin/show-terminal".source = ./files/show-terminal;
   home.file.".byobu/.tmux.conf".source = ./files/tmux.conf;
   home.file.".local/share/zsh-custom/themes/amuse-jay.zsh-theme".source = ./files/amuse-jay.zsh-theme;
+  home.file.".background-image".source = ./files/background.jpg;
 
   # -------- Environment Variables  --------
   home.sessionVariables = {

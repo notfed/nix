@@ -79,14 +79,14 @@
       shell = pkgs.zsh;
   };
 
-  # Set default GNOME user
-  environment.etc = {
-    "gdm/custom.conf".text = ''
-    [greeter]
-    IncludeAll=false
-    Include=jay
-    '';
-  };
+  ## Set default GNOME user
+  #environment.etc = {
+  #  "gdm/custom.conf".text = ''
+  #  [greeter]
+  #  IncludeAll=false
+  #  Include=jay
+  #  '';
+  #};
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
