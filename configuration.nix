@@ -21,6 +21,9 @@
   # Define on which hard drive you want to install Grub.
   # boot.loader.systemd-boot.enable = true;
 
+  # Linux kernel version
+  boot.kernelPackages = pkgs.linuxPackages_5_12;
+
   networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
