@@ -29,7 +29,7 @@ in {
     xclip
     zip
     autojump
-    oh-my-zsh zsh-autosuggestions zsh-syntax-highlighting zsh-command-time
+    oh-my-zsh zsh-autosuggestions zsh-syntax-highlighting
     byobu tmux screen
     hyperfine
 
@@ -73,6 +73,14 @@ in {
     temperature.day = 5000;
   };
 
+  services.random-background = {
+    enable = true;
+    imageDirectory = "%h/backgrounds";
+    display = "fill";
+    interval = "1h";
+    enableXinerama = false;
+  };
+
   programs.zsh = {
     enable = true;
     autocd = true;
@@ -89,19 +97,6 @@ in {
       theme = "amuse-jay";
       custom = "$HOME/.local/share/zsh-custom";
     };
-    
-    plugins = with pkgs; [
-      {
-        name = "zsh-syntax-highlighting";
-        src = fetchFromGitHub {
-          owner = "zsh-users";
-          repo = "zsh-syntax-highlighting";
-          rev = "0.6.0";
-          sha256 = "0zmq66dzasmr5pwribyh4kbkk23jxbpdw4rjxx0i7dx8jjp2lzl4";
-        };
-        file = "zsh-syntax-highlighting.zsh";
-      }
-    ];
   };
 
   programs.fzf = {
@@ -125,6 +120,9 @@ in {
     };
     "org/gnome/desktop/interface" = {
       "enable-hot-corners" = false;
+    };
+    "org/gnome/desktop/screensaver" = {
+      "picture-uri" = "/home/jay/bg.gif";
     };
   };
 
