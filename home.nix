@@ -39,6 +39,8 @@ in {
     redshift
     gimp imagemagick
     gnome.dconf-editor
+    feh
+    vlc
 
   ];
   programs.home-manager.enable = true;

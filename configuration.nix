@@ -68,8 +68,14 @@
       gparted parted
       wget file
       vim vim_configurable
+      dconf
       zsh
+      dconf
   ];
+
+  # GNOME Settings
+
+  environment.gnome.excludePackages = [ pkgs.epiphany pkgs.gnome.totem pkgs.gnome-tour ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jay = {
