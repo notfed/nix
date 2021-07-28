@@ -97,6 +97,17 @@ in {
     enableZshIntegration = true;
   };
 
+  programs.vscode = {
+      enable = true;
+      package = pkgs.vscode;
+      extensions = with pkgs.vscode-extensions; [
+          bbenoist.Nix
+      ];
+      userSettings = {
+          "editor.mouseWheelZoom" = "true";
+      };
+  };
+
   dconf.settings = {
     "org/gnome/settings-daemon/plugins/media-keys" = {
       custom-keybindings = [
