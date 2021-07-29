@@ -35,7 +35,8 @@ nixos-install
 
 ## Reboot, log in as root, set user password, then log in as user
 
-passwd jay
+passwd jay    # Change jay's password
+cp /home/jay/.nixpkgs/files/rick.png /var/lib/AccountsService/icons/jay # Set jay's login icon
 
 # NixOS Home Manager
 
