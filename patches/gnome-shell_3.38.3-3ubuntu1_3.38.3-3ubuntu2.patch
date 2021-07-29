@@ -131,10 +131,10 @@
 +    _refreshBackground() {
 +        let inline_style = [];
 +
-+        let backgroundColor = "#FF0000"; // this._loginscreenSettings.get_string(LOGINSCREEN_BACKGROUND_COLOR_KEY);
-+        let backgroundPictureUri = "file:///etc/nixos/background.jpg"; // this._loginscreenSettings.get_string(LOGINSCREEN_BACKGROUND_PICTURE_URI_KEY);
-+        let backgroundRepeat = "no-repeat"; // this._loginscreenSettings.get_string(LOGINSCREEN_BACKGROUND_REPEAT_KEY);
-+        let backgroundSize = "cover"; // this._loginscreenSettings.get_string(LOGINSCREEN_BACKGROUND_SIZE_KEY);
++        let backgroundColor = this._loginscreenSettings.get_string(LOGINSCREEN_BACKGROUND_COLOR_KEY);
++        let backgroundPictureUri = this._loginscreenSettings.get_string(LOGINSCREEN_BACKGROUND_PICTURE_URI_KEY);
++        let backgroundRepeat = this._loginscreenSettings.get_string(LOGINSCREEN_BACKGROUND_REPEAT_KEY);
++        let backgroundSize = this._loginscreenSettings.get_string(LOGINSCREEN_BACKGROUND_SIZE_KEY);
 +
 +        if (backgroundColor != "")
 +            inline_style.push("background-color: " + backgroundColor);

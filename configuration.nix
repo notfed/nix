@@ -99,13 +99,8 @@
       (self: super: {
         gnome = super.gnome.overrideScope' (selfg: superg: {
           gnome-shell = superg.gnome-shell.overrideAttrs (old: {
-            buildInputs = (old.buildInputs or []) ++ [
-              # CHEEKY WALLPAPER DERIVATION HERE
-            ];
             patches = (old.patches or []) ++ [
               (pkgs.substituteAll {
-                backgroundColour = "#d94360";
-                backgroundPath = "/etc/nixos/background.jpg";
                 src = ./gnome-shell_3.38.3-3ubuntu1_3.38.3-3ubuntu2.patch;
               })
             ];
@@ -114,6 +109,15 @@
       })
     ];
   };
+
+  services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
+  [com.ubuntu.login-screen]
+  background-repeat='no-repeat'
+  background-size='cover'
+  background-color='#777777'
+  background-picture-uri='file:///etc/nixos/background.jpg'
+  '';
+
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
