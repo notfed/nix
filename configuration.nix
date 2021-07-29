@@ -77,6 +77,9 @@
   };
   users.defaultUserShell = pkgs.zsh;
 
+  # Shells
+  environment.shells = with pkgs; [ bashInteractive zsh ];
+
   # GNOME Exclusions
   environment.gnome.excludePackages = [ pkgs.epiphany pkgs.gnome.totem pkgs.gnome-tour ];
 
