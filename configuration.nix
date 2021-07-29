@@ -94,6 +94,27 @@
   #  '';
   #};
 
+  nixpkgs = {
+    overlays = [
+      (self: super: {
+        gnome = super.gnome.overrideScope' (selfg: superg: {
+          gnome-shell = superg.gnome-shell.overrideAttrs (old: {
+            buildInputs = (old.buildInputs or []) ++ [
+              # CHEEKY WALLPAPER DERIVATION HERE
+            ];
+            patches = (old.patches or []) ++ [
+              (pkgs.substituteAll {
+                backgroundColour = "#d94360";
+                backgroundPath = "/etc/nixos/background.jpg";
+                src = ./gnome-shell_3.38.3-3ubuntu1_3.38.3-3ubuntu2.patch;
+              })
+            ];
+          });
+        });
+      })
+    ];
+  };
+
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
   # on your system were taken. It‘s perfectly fine and recommended to leave

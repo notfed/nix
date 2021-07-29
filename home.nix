@@ -32,6 +32,7 @@ in {
     oh-my-zsh zsh-autosuggestions zsh-syntax-highlighting
     byobu tmux screen
     hyperfine
+    dos2unix
 
     # ---- Desktop ----
     dropbox-cli cryptomator
@@ -41,7 +42,6 @@ in {
     gnome.dconf-editor
     feh
     vlc
-
   ];
   programs.home-manager.enable = true;
   programs.autojump.enable = true;
@@ -107,6 +107,7 @@ in {
       ];
       userSettings = {
           "editor.mouseWheelZoom" = "true";
+          "files.saveConflictResolution" = "overwriteFileOnDisk";
       };
   };
 
