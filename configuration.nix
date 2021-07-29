@@ -79,20 +79,13 @@
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jay = {
+      createHome = true;
       isNormalUser = true;
+      isSystemUser = false;
       home = "/home/jay";
       extraGroups = [ "wheel" ];
-      shell = pkgs.zsh;
   };
-
-  ## Set default GNOME user
-  #environment.etc = {
-  #  "gdm/custom.conf".text = ''
-  #  [greeter]
-  #  IncludeAll=false
-  #  Include=jay
-  #  '';
-  #};
+  users.defaultUserShell = pkgs.zsh;
 
   nixpkgs = {
     overlays = [
