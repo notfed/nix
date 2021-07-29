@@ -11,7 +11,7 @@
       	./hardware-configuration.nix
     ];
 
-  # Use the GRUB 2 boot loader.
+  # Bootloader
   boot.loader.grub.enable = true;
   boot.loader.grub.version = 2;
   boot.loader.grub.device = "nodev"; # E.g., "/dev/sdb"; # or "nodev" for efi only
@@ -21,27 +21,26 @@
   # Define on which hard drive you want to install Grub.
   # boot.loader.systemd-boot.enable = true;
 
-  # Linux kernel version
+  # Linux kernel
   boot.kernelPackages = pkgs.linuxPackages_5_12;
 
-  networking.hostName = "nixos"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
-  # Set your time zone.
+  # Time zone
   time.timeZone = "America/New_York";
 
-  # The global useDHCP flag is deprecated, therefore explicitly set to false here.
-  # Per-interface useDHCP will be mandatory in the future, so this generated config
-  # replicates the default behaviour.
+  # Networking
+  networking.hostName = "nixos";
   networking.useDHCP = false;
   networking.interfaces.enp0s31f6.useDHCP = true;
   networking.interfaces.enp9s0.useDHCP = true;
 
-  # Select internationalisation properties.
+  # Internationalisation
   i18n.defaultLocale = "en_US.UTF-8";
   
   # Enable the X11 windowing system.
   services.xserver.enable = true;
+  services.xserver.layout = "us";
 
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
@@ -50,10 +49,6 @@
   # Enable Nvidia drivers
   services.xserver.videoDrivers = [ "nvidia" ];
   
-  # Configure keymap in X11
-  # services.xserver.layout = "us";
-  # services.xserver.xkbOptions = "eurosign:e";
-
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
@@ -63,7 +58,6 @@
 
   # Packages
   nixpkgs.config.allowUnfree = true;
-
   environment.systemPackages = with pkgs; [
       gparted parted
       wget file
@@ -72,10 +66,6 @@
       zsh
       dconf
   ];
-
-  # GNOME Settings
-
-  environment.gnome.excludePackages = [ pkgs.epiphany pkgs.gnome.totem pkgs.gnome-tour ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jay = {
@@ -87,6 +77,10 @@
   };
   users.defaultUserShell = pkgs.zsh;
 
+  # GNOME Exclusions
+  environment.gnome.excludePackages = [ pkgs.epiphany pkgs.gnome.totem pkgs.gnome-tour ];
+
+  # GNOME login screen patch
   nixpkgs = {
     overlays = [
       (self: super: {
