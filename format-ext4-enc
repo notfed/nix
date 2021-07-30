@@ -33,9 +33,7 @@ mkdir -p /mnt/boot
 mount /dev/disk/by-partlabel/$TAG-boot /mnt/boot
 swapon /dev/vg/$TAG-swap
 
-# TODO: Untested
-sed -i "s/^.*ENCRYPT-PLACEHOLDER$/boot.initrd.luks.devices = [ { name = "root"; device = "${ENC_DEVICE//\//\\/}"; preLVM = true; } ];/g" configuration.nix
 export ENC_DEVICE="/dev/disk/by-partlabel/$TAG-enc"
-exit 1
-  
+sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.luksroot = [ { device = \""${ENC_DEVICE//\//\\/}"\"; preLVM = true; } ];/g" configuration.nix
+ 
 

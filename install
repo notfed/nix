@@ -25,7 +25,6 @@ fi
 
 echo "-------- Copying NixOS configuration to '$WIPE_DEVICE' --------"
 
-sed -i "s/^  boot.loader.grub.device = .*$/  boot.loader.grub.device = \"${WIPE_DEVICE//\//\\/}\";/g" configuration.nix
 nixos-generate-config --root /mnt
 cp configuration.nix /mnt/etc/nixos/configuration.nix
 cp files/background.jpg /mnt/etc/nixos/
