@@ -95,7 +95,7 @@
           gnome-shell = superg.gnome-shell.overrideAttrs (old: {
             patches = (old.patches or []) ++ [
               (pkgs.substituteAll {
-                src = ./gnome-shell_3.38.3-3ubuntu1_3.38.3-3ubuntu2.patch;
+                src = ./patches/gnome-shell_3.38.3-3ubuntu1_3.38.3-3ubuntu2.patch;
               })
             ];
           });
