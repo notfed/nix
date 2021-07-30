@@ -64,7 +64,7 @@
   # Packages
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
-      gparted parted
+      gparted parted cryptsetup
       wget file
       vim vim_configurable
       zsh
