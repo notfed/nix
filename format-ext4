@@ -1,0 +1,25 @@
+echo "-------- Formatting '$WIPE_DEVICE' --------"
+
+TAG=$(xxd -u -l 8 -p /dev/urandom)
+wipefs -a $WIPE_DEVICE
+parted -a optimal -s $WIPE_DEVICE -- \
+  mklabel gpt \
+  mkpart logical 0%      256MiB   set 1 bios_grub on \
+  mkpart logical 256MiB  512MiB   set 2 esp on  \
+  mkpart logical 512MiB  -9GB \
+  mkpart logical -9GB    100% \
+  name 1 $TAG-b \
+  name 2 $TAG-be \
+  name 3 $TAG-r \
+  name 4 $TAG-s
+
+mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-b
+mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/$TAG-be
+mkfs.ext4  -F    -L "root"     /dev/disk/by-partlabel/$TAG-r
+mkswap           -L "swap"     /dev/disk/by-partlabel/$TAG-s
+
+echo "-------- Mounting '$WIPE_DEVICE' --------"
+
+mount /dev/disk/by-partlabel/$TAG-r /mnt
+mkdir -p /mnt/boot
+mount /dev/disk/by-partlabel/$TAG-b /mnt/boot
