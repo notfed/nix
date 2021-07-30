@@ -1,7 +1,27 @@
 #!/usr/bin/env bash
 set -e
 
-echo "-------- Formatting '$WIPE_DEVICE' --------"
+# -------- Sanity checks --------
+
+if [ "$#" -ne 1 ] ; then
+    echo "usage: ./format-ext4-enc <device-to-destroy>" 
+    exit 1
+fi
+
+WIPE_DEVICE=$1
+
+if mount | grep $WIPE_DEVICE > /dev/null; then
+    echo "The device '$WIPE_DEVICE' is already mounted. Action cancelled."
+    exit 1
+fi
+
+read -p "WARNING! This will DESTROY '$WIPE_DEVICE'! Are you sure? If so, type '$WIPE_DEVICE': " choice
+if [ "$choice" != "$WIPE_DEVICE" ]; then
+  echo "Action cancelled."
+  exit 1
+fi
+
+echo; echo "-------- Formatting '$WIPE_DEVICE' partitions --------"
 
 TAG=$(xxd -u -l 8 -p /dev/urandom)
 
@@ -13,27 +33,53 @@ parted -a optimal -s $WIPE_DEVICE -- \
   mkpart logical 512MiB  100% \
   name 1 $TAG-boot \
   name 2 $TAG-efi \
-  name 3 $TAG-enc \
+  name 3 $TAG-enc
 
-mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-boot
-mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/$TAG-efi
-cryptsetup luksFormat /dev/disk/by-partlabel/$TAG-enc
-cryptsetup luksOpen /dev/disk/by-partlabel/$TAG-enc $TAG-enc
+echo; echo "-------- '$WIPE_DEVICE' partitions: --------"
+parted $WIPE_DEVICE -- print
+
+sleep 0.2
+while [ ! -e /dev/disk/by-partlabel/$TAG-boot ] ; do sleep 1; echo 'Waiting for udev...'; done
+while [ ! -e /dev/disk/by-partlabel/$TAG-efi  ] ; do sleep 1; echo 'Waiting for udev...'; done
+while [ ! -e /dev/disk/by-partlabel/$TAG-enc  ] ; do sleep 1; echo 'Waiting for udev...'; done
+
+echo; echo "-------- Formatting '$WIPE_DEVICE' (filesystems) --------"
+
+cryptsetup -q luksFormat /dev/disk/by-partlabel/$TAG-enc
+cryptsetup -q luksOpen /dev/disk/by-partlabel/$TAG-enc $TAG-enc
 pvcreate /dev/mapper/$TAG-enc
 vgcreate vg /dev/mapper/$TAG-enc
 lvcreate -L 8G         -n $TAG-swap vg
 lvcreate -l '100%FREE' -n $TAG-root vg
 mkfs.ext4 -F -L "root" /dev/vg/$TAG-root
 mkswap       -L "swap" /dev/vg/$TAG-swap
+mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-boot
+mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/$TAG-efi
+
+echo; echo "-------- '$WIPE_DEVICE': partition summary --------"
+echo "disk $WIPE_DEVICE {"
+echo "  partition /dev/disk/by-partlabel/$TAG-boot"
+echo "  partition /dev/disk/by-partlabel/$TAG-efi"
+echo "  partition /dev/disk/by-partlabel/$TAG-enc {{"
+echo "    volume-group /dev/mapper/$TAG-enc {"
+echo "      physical-volume /dev/vg/$TAG-root"
+echo "      physical-volume /dev/vg/$TAG-swap" 
+echo "    }"
+echo "  }}"
+echo "}"
 
 echo "-------- Mounting '$WIPE_DEVICE' --------"
 
 mount /dev/vg/$TAG-root /mnt
 mkdir -p /mnt/boot
 mount /dev/disk/by-partlabel/$TAG-boot /mnt/boot
-swapon /dev/vg/$TAG-swap
-
-export ENC_DEVICE="/dev/disk/by-partlabel/$TAG-enc"
-sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.luksroot = [ { device = \""${ENC_DEVICE//\//\\/}"\"; preLVM = true; } ];/g" configuration.nix
+export ROOT_ENC="/dev/disk/by-partlabel/$TAG-enc"
+sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.luksroot = [ { device = \""${ROOT_ENC//\//\\/}"\"; preLVM = true; } ];/g" configuration.nix
  
-
+#echo; echo "-------- Umount all --------"
+#umount /mnt/boot
+#umount /mnt
+#lvchange -an /dev/vg/$TAG-swap
+#lvchange -an /dev/vg/$TAG-root
+#cryptsetup luksClose $TAG-enc
+#exit 1

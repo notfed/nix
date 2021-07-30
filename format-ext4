@@ -1,3 +1,26 @@
+#!/usr/bin/env bash
+set -e
+
+# -------- Sanity checks --------
+
+if [ "$#" -ne 1 ] ; then
+    echo "usage: ./format-ext4 <device-to-destroy>" 
+    exit 1
+fi
+
+WIPE_DEVICE=$1
+
+if mount | grep $WIPE_DEVICE > /dev/null; then
+    echo "The device '$WIPE_DEVICE' is already mounted. Action cancelled."
+    exit 1
+fi
+
+read -p "WARNING! This will DESTROY '$WIPE_DEVICE'! Are you sure? If so, type '$WIPE_DEVICE': " choice
+if [ "$choice" != "$WIPE_DEVICE" ]; then
+  echo "Action cancelled."
+  exit 1
+fi
+
 echo "-------- Formatting '$WIPE_DEVICE' --------"
 
 TAG=$(xxd -u -l 8 -p /dev/urandom)

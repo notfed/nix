@@ -8,20 +8,7 @@ if [ "$#" -ne 1 ] ; then
     exit 1
 fi
 
-export WIPE_DEVICE=$1
-
-if mount | grep $WIPE_DEVICE > /dev/null; then
-    echo "The device '$WIPE_DEVICE' is already mounted. Action cancelled."
-    exit 1
-fi
-
-read -p "WARNING! This will DESTROY '$WIPE_DEVICE'! Are you sure? If so, type '$WIPE_DEVICE': " choice
-if [ "$choice" != "$WIPE_DEVICE" ]; then
-  echo "Action cancelled."
-  exit 1
-fi
-
-./format-ext4-enc
+./format-ext4-enc $1
 
 echo "-------- Copying NixOS configuration to '$WIPE_DEVICE' --------"
 
@@ -32,8 +19,8 @@ cp patches/* /mnt/etc/nixos/
 
 echo "-------- Updating current OS's packages --------"
 
-nix-build '<nixpkgs/nixos>' -A config.system.build.toplevel -I nixos-config=/mnt/etc/nixos/configuration.nix # Workaround for https://github.com/NixOS/nixpkgs/issues/126141
-
+# Workaround for https://github.com/NixOS/nixpkgs/issues/126141
+nix-build '<nixpkgs/nixos>' -A config.system.build.toplevel -I nixos-config=/mnt/etc/nixos/configuration.nix 
 
 echo "-------- Installing NixOS --------"
 
