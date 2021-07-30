@@ -1,57 +1,16 @@
-# NixOS - Installing from scratch
+# NixOS - Custom Build - Install from scratch
 
 ## Note
 
-Do all of this as root. Must have `git`, `xxd`, `parted`, `wipefs`, `mkfs.{ext4,vfat}` installed.
+Do all of this as root from [Nixos live](https://nixos.org/download.html).
 
-## Format partitions/filesystems
+# Instructions:
 
-```
-WIPE_DEVICE=/dev/sdc
-TAG=$(xxd -u -l 16 -p /dev/urandom)
-wipefs -a $WIPE_DEVICE
-parted -a optimal -s $WIPE_DEVICE -- \
-  mklabel gpt \
-  mkpart logical 0%      256MiB   set 1 bios_grub on \
-  mkpart logical 256MiB  512MiB   set 2 esp on  \
-  mkpart logical 512MiB  -9GB \
-  mkpart logical -9GB    100% \
-  name 1 $TAG-1 \
-  name 2 $TAG-2 \
-  name 3 $TAG-3 \
-  name 4 $TAG-4
-
-mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-1
-mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/$TAG-2
-mkfs.ext4  -f    -L "root"     /dev/disk/by-partlabel/$TAG-3
-mkswap           -L "swap"     /dev/disk/by-partlabel/$TAG-4
-```
-
-## Mount
-
-```
-mount /dev/disk/by-partlabel/$TAG-3 /mnt
-mkdir -p /mnt/boot
-mount /dev/disk/by-partlabel/$TAG-1 /mnt/boot
-```
-
-## Pull this code down
-
-```
 git clone https://github.com/notfed/nix
 cd nix
-```
+./install <device-to-destroy>
 
-## Install NixOS
-
-```
-mkdir -p /mnt/etc/nixos
-nixos-generate-config --root /mnt
-cp configuration.nix /mnt/etc/nixos/configuration.nix
-cp files/background.jpg /mnt/etc/nixos/
-cp patches/* /mnt/etc/nixos/
-nixos-install
-```
+TODO: Modify configuration to pull from WIPE_DEVICE env variable
 
 ## Reboot, log in as root, set user password, then log in as user
 
