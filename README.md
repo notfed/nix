@@ -2,12 +2,13 @@
 
 ## Note
 
-Do all of this as root. Must have `git`, `parted`, `wipefs`, `mkfs.{ext4,vfat}` installed.
+Do all of this as root. Must have `git`, `xxd`, `parted`, `wipefs`, `mkfs.{ext4,vfat}` installed.
 
 ## Format partitions/filesystems
 
 ```
 WIPE_DEVICE=/dev/sdc
+TAG=$(xxd -u -l 16 -p /dev/urandom)
 wipefs -a $WIPE_DEVICE
 parted -a optimal -s $WIPE_DEVICE -- \
   mklabel gpt \
@@ -15,23 +16,23 @@ parted -a optimal -s $WIPE_DEVICE -- \
   mkpart logical 256MiB  512MiB   set 2 esp on  \
   mkpart logical 512MiB  -9GB \
   mkpart logical -9GB    100% \
-  name 1 8SAQeku5S0oA1gqGwSB6fQ-1 \
-  name 2 8SAQeku5S0oA1gqGwSB6fQ-2 \
-  name 3 8SAQeku5S0oA1gqGwSB6fQ-3 \
-  name 4 8SAQeku5S0oA1gqGwSB6fQ-4
+  name 1 $TAG-1 \
+  name 2 $TAG-2 \
+  name 3 $TAG-3 \
+  name 4 $TAG-4
 
-mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/8SAQeku5S0oA1gqGwSB6fQ-1
-mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/8SAQeku5S0oA1gqGwSB6fQ-2
-mkfs.ext4  -f    -L "root"     /dev/disk/by-partlabel/8SAQeku5S0oA1gqGwSB6fQ-3
-mkswap           -L "swap"     /dev/disk/by-partlabel/8SAQeku5S0oA1gqGwSB6fQ-4
+mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-1
+mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/$TAG-2
+mkfs.ext4  -f    -L "root"     /dev/disk/by-partlabel/$TAG-3
+mkswap           -L "swap"     /dev/disk/by-partlabel/$TAG-4
 ```
 
 ## Mount
 
 ```
-mount /dev/disk/by-partlabel/8SAQeku5S0oA1gqGwSB6fQ-3 /mnt
+mount /dev/disk/by-partlabel/$TAG-3 /mnt
 mkdir -p /mnt/boot
-mount /dev/disk/by-partlabel/8SAQeku5S0oA1gqGwSB6fQ-1 /mnt/boot
+mount /dev/disk/by-partlabel/$TAG-1 /mnt/boot
 ```
 
 ## Pull this code down
