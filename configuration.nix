@@ -14,7 +14,7 @@
   # Bootloader
   boot.loader.grub.enable = true;
   boot.loader.grub.version = 2;
-  boot.loader.grub.device = "/dev/sda"; # E.g., "/dev/sdb"; # or "nodev" for efi only
+  boot.loader.grub.device = "/dev/sda";
   # boot.loader.grub.efiSupport = true;
   # boot.loader.grub.efiInstallAsRemovable = true;
   # boot.loader.efi.efiSysMountPoint = "/boot/efi";

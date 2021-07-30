@@ -8,7 +8,7 @@ if [ "$#" -ne 1 ] ; then
     exit 1
 fi
 
-WIPE_DEVICE=$1
+export WIPE_DEVICE=$1
 
 if mount | grep $WIPE_DEVICE > /dev/null; then
     echo "The device '$WIPE_DEVICE' is already mounted. Action cancelled."
@@ -17,13 +17,13 @@ fi
 
 read -p "This will DESTROY '$WIPE_DEVICE'. Are you sure? If so, type '$WIPE_DEVICE': " choice
 case "$choice" in 
-  $WIPE_DEVICE ) echo "---- Installing NixOS to '$WIPE_DEVICE'... ----";;
+  $WIPE_DEVICE) ;; 
   * ) echo "Action cancelled."; exit 1;;
 esac
 
 echo "-------- Formatting '$WIPE_DEVICE' --------"
 
-TAG=$(xxd -u -l 16 -p /dev/urandom)
+TAG=$(xxd -u -l 8 -p /dev/urandom)
 wipefs -a $WIPE_DEVICE
 parted -a optimal -s $WIPE_DEVICE -- \
   mklabel gpt \
@@ -31,24 +31,26 @@ parted -a optimal -s $WIPE_DEVICE -- \
   mkpart logical 256MiB  512MiB   set 2 esp on  \
   mkpart logical 512MiB  -9GB \
   mkpart logical -9GB    100% \
-  name 1 $TAG-1 \
-  name 2 $TAG-2 \
-  name 3 $TAG-3 \
-  name 4 $TAG-4
+  name 1 $TAG-b \
+  name 2 $TAG-be \
+  name 3 $TAG-r \
+  name 4 $TAG-s
 
-mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-1
-mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/$TAG-2
-mkfs.ext4  -F    -L "root"     /dev/disk/by-partlabel/$TAG-3
-mkswap           -L "swap"     /dev/disk/by-partlabel/$TAG-4
+mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-b
+mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/$TAG-be
+mkfs.ext4  -F    -L "root"     /dev/disk/by-partlabel/$TAG-r
+mkswap           -L "swap"     /dev/disk/by-partlabel/$TAG-s
 
 echo "-------- Mounting '$WIPE_DEVICE' --------"
 
-mount /dev/disk/by-partlabel/$TAG-3 /mnt
+mount /dev/disk/by-partlabel/$TAG-r /mnt
 mkdir -p /mnt/boot
-mount /dev/disk/by-partlabel/$TAG-1 /mnt/boot
+mount /dev/disk/by-partlabel/$TAG-b /mnt/boot
+
 
 echo "-------- Copying NixOS configuration to '$WIPE_DEVICE' --------"
 
+sed -i "s/^  boot.loader.grub.device = .*$/  boot.loader.grub.device = \"${WIPE_DEVICE//\//\\/}\";/g" configuration.nix
 nixos-generate-config --root /mnt
 cp configuration.nix /mnt/etc/nixos/configuration.nix
 cp files/background.jpg /mnt/etc/nixos/
@@ -57,6 +59,7 @@ cp patches/* /mnt/etc/nixos/
 echo "-------- Performing workaround for a NixOS bug --------"
 
 nix-build '<nixpkgs/nixos>' -A config.system.build.toplevel -I nixos-config=/mnt/etc/nixos/configuration.nix # Workaround for https://github.com/NixOS/nixpkgs/issues/126141
+
 
 echo "-------- Installing NixOS --------"
 
