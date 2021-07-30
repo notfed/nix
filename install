@@ -21,7 +21,7 @@ if [ "$choice" != "$WIPE_DEVICE" ]; then
   exit 1
 fi
 
-./format-ext4
+./format-ext4-enc
 
 echo "-------- Copying NixOS configuration to '$WIPE_DEVICE' --------"
 

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -e
+
+echo "-------- Formatting '$WIPE_DEVICE' --------"
+
+TAG=$(xxd -u -l 8 -p /dev/urandom)
+
+wipefs -a $WIPE_DEVICE
+parted -a optimal -s $WIPE_DEVICE -- \
+  mklabel gpt \
+  mkpart logical 0%      256MiB   set 1 bios_grub on \
+  mkpart logical 256MiB  512MiB   set 2 esp on  \
+  mkpart logical 512MiB  100% \
+  name 1 $TAG-boot \
+  name 2 $TAG-efi \
+  name 3 $TAG-enc \
+
+mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-boot
+mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/$TAG-efi
+cryptsetup luksFormat /dev/disk/by-partlabel/$TAG-enc
+cryptsetup luksOpen /dev/disk/by-partlabel/$TAG-enc $TAG-enc
+pvcreate /dev/mapper/$TAG-enc
+vgcreate vg /dev/mapper/$TAG-enc
+lvcreate -L 8G         -n $TAG-swap vg
+lvcreate -l '100%FREE' -n $TAG-root vg
+mkfs.ext4 -F -L "root" /dev/vg/$TAG-root
+mkswap       -L "swap" /dev/vg/$TAG-swap
+
+echo "-------- Mounting '$WIPE_DEVICE' --------"
+
+mount /dev/vg/$TAG-root /mnt
+mkdir -p /mnt/boot
+mount /dev/disk/by-partlabel/$TAG-boot /mnt/boot
+swapon /dev/vg/$TAG-swap
+
+# TODO: Untested
+sed -i "s/^.*ENCRYPT-PLACEHOLDER$/boot.initrd.luks.devices = [ { name = "root"; device = "${ENC_DEVICE//\//\\/}"; preLVM = true; } ];/g" configuration.nix
+export ENC_DEVICE="/dev/disk/by-partlabel/$TAG-enc"
+exit 1
+  
+

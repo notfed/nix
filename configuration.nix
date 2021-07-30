@@ -20,6 +20,11 @@
   # boot.loader.efi.efiSysMountPoint = "/boot/efi";
   # Define on which hard drive you want to install Grub.
   # boot.loader.systemd-boot.enable = true;
+  
+  /* ENCRYPT-PLACEHOLDER */
+
+  # SSD Performance
+  fileSystems."/".options = [ "noatime" "nodiratime" ];
 
   # Linux kernel
   boot.kernelPackages = pkgs.linuxPackages_5_12;
