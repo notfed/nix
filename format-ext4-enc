@@ -74,7 +74,7 @@ mount /dev/vg/$TAG-root /mnt
 mkdir -p /mnt/boot
 mount /dev/disk/by-partlabel/$TAG-boot /mnt/boot
 export ROOT_ENC="/dev/disk/by-partlabel/$TAG-enc"
-sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.luksroot = [ { device = \""${ROOT_ENC//\//\\/}"\"; preLVM = true; } ];/g" configuration.nix
+sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.luksroot = { device = \""${ROOT_ENC//\//\\/}"\"; preLVM = true; };/g" configuration.nix
  
 #echo; echo "-------- Umount all --------"
 #umount /mnt/boot

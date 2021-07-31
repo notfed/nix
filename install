@@ -13,9 +13,7 @@ fi
 echo "-------- Copying NixOS configuration to '$WIPE_DEVICE' --------"
 
 nixos-generate-config --root /mnt
-cp configuration.nix /mnt/etc/nixos/configuration.nix
-cp files/background.jpg /mnt/etc/nixos/
-cp patches/* /mnt/etc/nixos/
+cp -r configuration.nix files patches /mnt/etc/nixos/
 
 echo "-------- Updating current OS's packages --------"
 
