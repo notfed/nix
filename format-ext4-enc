@@ -28,18 +28,15 @@ TAG=$(xxd -u -l 8 -p /dev/urandom)
 wipefs -a $WIPE_DEVICE
 parted -a optimal -s $WIPE_DEVICE -- \
   mklabel gpt \
-  mkpart logical 0%      256MiB   set 1 bios_grub on \
-  mkpart logical 256MiB  512MiB   set 2 esp on  \
+  mkpart logical 1MiB    512MiB   set 1 esp on  \
   mkpart logical 512MiB  100% \
-  name 1 $TAG-boot \
-  name 2 $TAG-efi \
-  name 3 $TAG-enc
+  name 1 $TAG-efi \
+  name 2 $TAG-enc
 
 echo; echo "-------- '$WIPE_DEVICE' partitions: --------"
 parted $WIPE_DEVICE -- print
 
 sleep 0.2
-while [ ! -e /dev/disk/by-partlabel/$TAG-boot ] ; do sleep 1; echo 'Waiting for udev...'; done
 while [ ! -e /dev/disk/by-partlabel/$TAG-efi  ] ; do sleep 1; echo 'Waiting for udev...'; done
 while [ ! -e /dev/disk/by-partlabel/$TAG-enc  ] ; do sleep 1; echo 'Waiting for udev...'; done
 
@@ -53,12 +50,12 @@ lvcreate -L 8G         -n $TAG-swap vg
 lvcreate -l '100%FREE' -n $TAG-root vg
 mkfs.ext4 -F -L "root" /dev/vg/$TAG-root
 mkswap       -L "swap" /dev/vg/$TAG-swap
-mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-boot
+#mkfs.ext4  -F    -L "boot"     /dev/disk/by-partlabel/$TAG-boot
 mkfs.vfat  -F 32 -n "BOOT-EFI" /dev/disk/by-partlabel/$TAG-efi
 
 echo; echo "-------- '$WIPE_DEVICE': partition summary --------"
 echo "disk $WIPE_DEVICE {"
-echo "  partition /dev/disk/by-partlabel/$TAG-boot"
+#echo "  partition /dev/disk/by-partlabel/$TAG-boot"
 echo "  partition /dev/disk/by-partlabel/$TAG-efi"
 echo "  partition /dev/disk/by-partlabel/$TAG-enc {{"
 echo "    volume-group /dev/mapper/$TAG-enc {"
@@ -72,9 +69,10 @@ echo "-------- Mounting '$WIPE_DEVICE' --------"
 
 mount /dev/vg/$TAG-root /mnt
 mkdir -p /mnt/boot
-mount /dev/disk/by-partlabel/$TAG-boot /mnt/boot
+#mount /dev/disk/by-partlabel/$TAG-boot /mnt/boot/efi
+mount /dev/disk/by-partlabel/$TAG-efi /mnt/boot
 export ROOT_ENC="/dev/disk/by-partlabel/$TAG-enc"
-sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.luksroot = { device = \""${ROOT_ENC//\//\\/}"\"; preLVM = true; };/g" configuration.nix
+sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.\"${TAG}-enc\" = { device = \""${ROOT_ENC//\//\\/}"\"; preLVM = true; };/g" configuration.nix
  
 #echo; echo "-------- Umount all --------"
 #umount /mnt/boot
