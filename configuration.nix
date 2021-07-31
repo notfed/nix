@@ -14,8 +14,9 @@
   # Bootloader, MBR
   boot.loader.grub.enable = true;
   boot.loader.grub.version = 2;
-  boot.loader.grub.device = "!..."; # NOTE: Need to update manually for now
+  boot.loader.grub.device = "nodev"; /* GRUB-DEVICE-PLACEHOLDER */
   boot.loader.grub.efiSupport = false;
+  #boot.loader.grub.splashImage = "./files/grub_background.jpg";
 
   # Bootloader, EFI (https://blog.maximilianschulke.com/installing-nix-os-with-full-disk-encryption)
   /*
