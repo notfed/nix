@@ -8,7 +8,7 @@ if [ "$#" -ne 1 ] ; then
     exit 1
 fi
 
-./format-ext4-enc $1
+./format-mbr-ext4-enc $1
 
 echo "-------- Copying NixOS configuration to '$WIPE_DEVICE' --------"
 
