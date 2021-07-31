@@ -11,11 +11,19 @@
       	./hardware-configuration.nix
     ];
 
-  # Bootloader, https://blog.maximilianschulke.com/installing-nix-os-with-full-disk-encryption
+  # Bootloader, MBR
+  boot.loader.grub.enable = true;
+  boot.loader.grub.version = 2;
+  boot.loader.grub.device = "!..."; # NOTE: Need to update manually for now
+  boot.loader.grub.efiSupport = false;
+
+  # Bootloader, EFI (https://blog.maximilianschulke.com/installing-nix-os-with-full-disk-encryption)
+  /*
   boot.loader.grub.enable = true;
   boot.loader.grub.version = 2;
   boot.loader.grub.device = "nodev"; # NOTE: DANGEROUS: WE SHOULD DYNAMIC-IZE THIS
   boot.loader.grub.efiSupport = true;
+  */
   #boot.loader.grub.enableCryptodisk = true;
   #boot.loader.efi.efiSysMountPoint = "/boot/efi";
   #boot.loader.grub.efiInstallAsRemovable = true;

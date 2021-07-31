@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+set -e
+
+# -------- Sanity checks --------
+
+if [ "$#" -ne 1 ] ; then
+    echo "usage: ./format-ext4-enc <device-to-destroy>" 
+    exit 1
+fi
+
+WIPE_DEVICE=$1
+
+if mount | grep $WIPE_DEVICE > /dev/null; then
+    echo "The device '$WIPE_DEVICE' is already mounted. Action cancelled."
+    exit 1
+fi
+
+read -p "WARNING! This will DESTROY '$WIPE_DEVICE'! Are you sure? If so, type '$WIPE_DEVICE': " choice
+if [ "$choice" != "$WIPE_DEVICE" ]; then
+  echo "Action cancelled."
+  exit 1
+fi
+
+echo; echo "-------- Formatting '$WIPE_DEVICE' partitions --------"
+
+TAG=$(xxd -u -l 3 -p /dev/urandom)
+
+wipefs -a $WIPE_DEVICE
+parted -a optimal -s $WIPE_DEVICE -- \
+  mklabel msdos \
+  mkpart primary 0%      512MiB \
+  mkpart primary 512MiB  100% 
+export BOOT_PART=${WIPE_DEVICE}1
+export ENC_PART=${WIPE_DEVICE}2
+
+echo; echo "-------- '$WIPE_DEVICE' partitions: --------"
+parted $WIPE_DEVICE -- print
+
+echo; echo "-------- Formatting '$WIPE_DEVICE' (filesystems) --------"
+
+cryptsetup -q luksFormat $ENC_PART
+cryptsetup -q luksOpen $ENC_PART $TAG
+pvcreate /dev/mapper/$TAG
+vgcreate vg /dev/mapper/$TAG;           mkfs.ext4 -F -L "boot" $BOOT_PART
+lvcreate -L 8G         -n $TAG-swap vg; mkswap       -L "swap" /dev/vg/$TAG-swap
+lvcreate -l '100%FREE' -n $TAG-root vg; mkfs.ext4 -F -L "root" /dev/vg/$TAG-root
+
+echo; echo "-------- '$WIPE_DEVICE': partition summary --------"
+echo "disk $WIPE_DEVICE {"
+echo "  partition ${BOOT_PART}"
+echo "  partition ${ENC_PART} {{"
+echo "    volume-group /dev/mapper/$TAG {"
+echo "      physical-volume /dev/vg/$TAG-root"
+echo "      physical-volume /dev/vg/$TAG-swap" 
+echo "    }"
+echo "  }}"
+echo "}"
+echo
+
+lsblk $WIPE_DEVICE
+echo
+
+echo "-------- Mounting '$WIPE_DEVICE' --------"
+
+mount /dev/vg/$TAG-root /mnt
+mkdir -p /mnt/boot
+mount ${BOOT_PART} /mnt/boot
+sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.\"${TAG}\" = { device = \""${ENC_PART//\//\\/}"\"; preLVM = true; };/g" configuration.nix
+ 
+#echo; echo "-------- Umount all --------"
+#umount /mnt/boot
+#umount /mnt
+#lvchange -an /dev/vg/$TAG-swap
+#lvchange -an /dev/vg/$TAG-root
+#cryptsetup luksClose $TAG
+#exit 1
