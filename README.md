@@ -13,31 +13,16 @@ setup/format <device-to-destroy>
 setup/mount
 setup/install
 nixos-enter
-passwd <your-username>
+su - <your-username>
+passwd
+/etc/nixos/files/install-home-manager
 exit
 setup/unmount
 ```
 
 That's it. Reboot and log in.
 
-# (Beta home-manager installation steps)
-
-```
-nixos-enter
-passwd <your-username>
-su <your-username>
-nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
-nix-channel --update
-exit
-su <your-username>
-cp /etc/nixos/home.nix ~/.config/nixpkgs/home.nix
-nix-shell '<home-manager>' -A install
-exit
-exit
-setup/unmount
-```
-
-# NixOS Home Manager
+# NixOS Home Manager (No longer needed?)
 
 Installing:
 
