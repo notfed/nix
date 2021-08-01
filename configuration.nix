@@ -16,7 +16,7 @@
   boot.loader.grub.version = 2;
   boot.loader.grub.device = "nodev"; /* GRUB-DEVICE-PLACEHOLDER */
   boot.loader.grub.efiSupport = false;
-  #boot.loader.grub.splashImage = "./files/grub_background.jpg";
+  boot.loader.grub.splashImage = "./files/background.jpg";
 
   # Bootloader, EFI (https://blog.maximilianschulke.com/installing-nix-os-with-full-disk-encryption)
   /*
