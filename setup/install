@@ -11,7 +11,7 @@ fi
 echo "-------- Copying NixOS configuration --------"
 
 nixos-generate-config --root /mnt
-cp -r configuration.nix files patches /mnt/etc/nixos/
+cp -r configuration.nix boot.nix files patches /mnt/etc/nixos/
 
 echo "-------- Updating current OS's packages --------"
 
