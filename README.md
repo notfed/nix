@@ -9,7 +9,10 @@ Do all of this [Nixos live](https://nixos.org/download.html) as the `root` user.
 ```
 git clone https://github.com/notfed/nix
 cd nix
-./install <device-to-destroy>
+setup/format <device-to-destroy>
+setup/mount
+setup/install
+setup/unmount
 ```
 
 ## Reboot, log in as root, then:

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -e
+SCRIPT_PATH=`realpath $0`
+SCRIPT_PARENT_PATH=`dirname $SCRIPT_PATH`
 
 # -------- Sanity checks --------
 
@@ -80,21 +82,39 @@ getdevicebyuuid() { # usage: getdeviceuuid <device>
 }
 
 WIPE_DEVICE_BY_ID=$(udevadm info $WIPE_DEVICE -q symlink -r | sed 's/ /\n/g' | awk '/by-id/{print $0}')
-#BOOT_PART_BY_UUID=$(getpartbyuuid $WIPE_DEVICE 1)
+BOOT_PART_BY_UUID=$(getpartbyuuid $WIPE_DEVICE 1)
 ENC_PART_BY_UUID=$(getpartbyuuid $WIPE_DEVICE 2)
+
+echo "-------- Unmapping '$WIPE_DEVICE' --------"
+lvchange -an /dev/vg/$TAG-swap
+lvchange -an /dev/vg/$TAG-root
+cryptsetup luksClose $TAG
+echo "TAG=$TAG"
 
 echo "-------- Mounting '$WIPE_DEVICE' --------"
 
+echo "WRITING TO '$SCRIPT_PARENT_PATH/mount'"
+cat << HEREDOC > $SCRIPT_PARENT_PATH/mount
+#!/usr/bin/env sh
+set -e
+cryptsetup -q luksOpen $ENC_PART_BY_UUID $TAG
+sleep 0.5 # TODO: Make this better. This is waiting for udev.
 mount /dev/vg/$TAG-root /mnt
 mkdir -p /mnt/boot
-mount ${BOOT_PART} /mnt/boot
-sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.\"${TAG}\" = { device = \""${ENC_PART_BY_UUID//\//\\/}"\"; preLVM = true; };/g" configuration.nix
-sed -i "s/^.*GRUB-DEVICE-PLACEHOLDER.*$/  boot.loader.grub.device = \""${WIPE_DEVICE_BY_ID//\//\\/}"\";/g" configuration.nix
+mount ${BOOT_PART_BY_UUID} /mnt/boot
+sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.\"${TAG}\" = { device = \"${ENC_PART_BY_UUID//\//\\/}\"; preLVM = true; };/g" configuration.nix
+sed -i "s/^.*GRUB-DEVICE-PLACEHOLDER.*$/  boot.loader.grub.device = \"${WIPE_DEVICE_BY_ID//\//\\/}\";/g" configuration.nix
+HEREDOC
+chmod 777 $SCRIPT_PARENT_PATH/mount
  
 echo; echo "-------- Umount all --------"
-exit 0
+echo "WRITING TO '$SCRIPT_PARENT_PATH/unmount'"
+cat << HEREDOC > $SCRIPT_PARENT_PATH/unmount
+#!/usr/bin/env sh
 umount /mnt/boot
 umount /mnt
 lvchange -an /dev/vg/$TAG-swap
 lvchange -an /dev/vg/$TAG-root
 cryptsetup luksClose $TAG
+HEREDOC
+chmod 777 $SCRIPT_PARENT_PATH/unmount

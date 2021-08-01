@@ -3,14 +3,12 @@ set -e
 
 # -------- Sanity checks --------
 
-if [ "$#" -ne 1 ] ; then
-    echo "usage: ./install <device-to-destroy>" 
+if [ ! -f setup/mount ] || [ ! -d /mnt/boot ]; then
+    echo "error: first need to run setup/format then setup/mount"
     exit 1
 fi
 
-./format-mbr-ext4-enc $1
-
-echo "-------- Copying NixOS configuration to '$WIPE_DEVICE' --------"
+echo "-------- Copying NixOS configuration --------"
 
 nixos-generate-config --root /mnt
 cp -r configuration.nix files patches /mnt/etc/nixos/
