@@ -12,14 +12,29 @@ cd nix
 setup/format <device-to-destroy>
 setup/mount
 setup/install
+nixos-enter
+passwd <your-username>
+exit
 setup/unmount
 ```
 
-## Reboot, log in as root, then:
+That's it. Reboot and log in.
+
+# (Beta home-manager installation steps)
 
 ```
-passwd jay
-cp /home/jay/.nixpkgs/files/icon.png /var/lib/AccountsService/icons/jay # Set jay's login icon
+nixos-enter
+passwd <your-username>
+su <your-username>
+nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
+nix-channel --update
+exit
+su <your-username>
+cp /etc/nixos/home.nix ~/.config/nixpkgs/home.nix
+nix-shell '<home-manager>' -A install
+exit
+exit
+setup/unmount
 ```
 
 # NixOS Home Manager
@@ -30,6 +45,7 @@ Installing:
 nix-channel --add https://github.com/nix-community/home-manager/archive/master.tar.gz home-manager
 nix-channel --update
 # Log out, then log back in
+cp /etc/nixos/home.nix ~/.config/nixpkgs/home.nix
 nix-shell '<home-manager>' -A install
 ```
 
