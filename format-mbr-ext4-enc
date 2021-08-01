@@ -92,6 +92,7 @@ sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.\"${TAG}\" = { de
 sed -i "s/^.*GRUB-DEVICE-PLACEHOLDER.*$/  boot.loader.grub.device = \""${WIPE_DEVICE_BY_ID//\//\\/}"\";/g" configuration.nix
  
 echo; echo "-------- Umount all --------"
+exit 0
 umount /mnt/boot
 umount /mnt
 lvchange -an /dev/vg/$TAG-swap
