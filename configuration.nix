@@ -80,7 +80,7 @@
   environment.shells = with pkgs; [ bashInteractive zsh ];
 
   # GNOME Exclusions
-  environment.gnome.excludePackages = [ pkgs.epiphany pkgs.gnome.totem pkgs.gnome-tour ];
+  environment.gnome.excludePackages = [ pkgs.gnome.totem pkgs.gnome-tour ];
 
   # GNOME login screen patch
   nixpkgs = {
@@ -104,7 +104,7 @@
   background-repeat='no-repeat'
   background-size='cover'
   background-color='#777777'
-  background-picture-uri='file:///etc/nixos/background.jpg'
+  background-picture-uri='file:///etc/nixos/files/background.jpg'
   '';
 
 
