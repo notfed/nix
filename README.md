@@ -1,10 +1,9 @@
 # NixOS - Custom Build - Install from scratch
 
-## Note
+# Instructions:
 
 Do all of this in a live USB of [Nixos](https://nixos.org/download.html), as the `root` user.
 
-# Instructions:
 
 ```
 git clone https://github.com/notfed/nix
@@ -19,16 +18,21 @@ exit
 setup/unmount
 ```
 
-Reboot and log in as <your-username>. Then run:
+Reboot. Log in as <your-username>. Run:
 
 ```
-. /etc/nixos/files/install-home-manager
+/etc/nixos/files/install-home-manager
+```
+
+Log out. Log in. Run:
+
+```
 home-manager switch
 ```
 
 That's it!
 
-# NixOS Home Manager
+# Home Manager - Reconfiguring
 
 Configuring:
 
@@ -42,7 +46,7 @@ Updating:
 home-manager switch
 ```
 
-# NixOS - Re-configuring
+# NixOS - Reconfiguring
 
 Configuring:
 
