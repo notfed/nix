@@ -13,8 +13,9 @@ setup/format <device-to-destroy>
 setup/mount
 setup/install
 nixos-enter
+passwd <your-username>
 su - <your-username>
-passwd
+cp /etc/nixos/files/icon.png ~/.face
 /etc/nixos/files/install-home-manager
 exit
 setup/unmount
