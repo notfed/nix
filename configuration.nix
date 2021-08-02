@@ -68,6 +68,9 @@
   };
   users.defaultUserShell = pkgs.zsh;
 
+  # Disable root user
+  users.users.root.hashedPassword = "!";
+
   # Shells
   environment.shells = with pkgs; [ bashInteractive zsh ];
 
