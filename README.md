@@ -2,7 +2,7 @@
 
 ## Note
 
-Do all of this [Nixos live](https://nixos.org/download.html) as the `root` user.
+Do all of this in a live USB of [Nixos](https://nixos.org/download.html), as the `root` user.
 
 # Instructions:
 
@@ -12,10 +12,9 @@ cd nix
 setup/format <device-to-destroy>
 setup/mount
 setup/install
-cp /etc/nixos/files/face.png /mnt/var/lib/AccountsService/icons/jay
+cp /etc/nixos/files/face.png /mnt/var/lib/AccountsService/icons/<your-username>
 nixos-enter
 passwd <your-username>
-su - <your-username>
 exit
 setup/unmount
 ```
