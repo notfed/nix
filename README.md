@@ -12,10 +12,10 @@ cd nix
 setup/format <device-to-destroy>
 setup/mount
 setup/install
+cp /etc/nixos/files/face.png /mnt/var/lib/AccountsService/icons/jay
 nixos-enter
 passwd <your-username>
 su - <your-username>
-cp /etc/nixos/files/icon.png ~/.face
 exit
 setup/unmount
 ```

@@ -142,7 +142,7 @@ in {
   home.file.".byobu/.tmux.conf".source = /etc/nixos/files/tmux.conf;
   home.file.".local/share/zsh-custom/themes/amuse-jay.zsh-theme".source = /etc/nixos/files/amuse-jay.zsh-theme;
   home.file.".background-image".source = /etc/nixos/files/background.jpg;
-  home.file.".face".source = /etc/nixos/files/icon.png;
+  home.file.".face".source = /etc/nixos/files/face.png;
 
   # -------- Environment Variables  --------
   home.sessionVariables = {
