@@ -44,7 +44,7 @@ parted $WIPE_DEVICE -- print
 
 echo; echo "-------- Formatting '$WIPE_DEVICE' (filesystems) --------"
 
-cryptsetup -q luksFormat $ENC_PART
+cryptsetup -q luksFormat --pbkdf argon2id $ENC_PART
 cryptsetup -q luksOpen $ENC_PART $TAG
 pvcreate /dev/mapper/$TAG
 vgcreate vg /dev/mapper/$TAG;           mkfs.vfat -F 32           $BOOT_PART
