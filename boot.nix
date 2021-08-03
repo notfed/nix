@@ -9,5 +9,5 @@
   boot.loader.efi.canTouchEfiVariables = false;
 
   # LUKS
-  /* ENCRYPT-PLACEHOLDER */
+  boot.initrd.luks.devices."D032934B84795D248DDC8255A80F3ADE" = { device = "/dev/disk/by-partlabel/D032934B84795D248DDC8255A80F3ADE-enc"; preLVM = true; };
 }
