@@ -36,8 +36,8 @@ parted -a optimal -s $WIPE_DEVICE -- \
   name 1 $TAG-boo \
   name 2 $TAG-enc
 
-BOOT_PART="${WIPE_DEVICE}1" # TODO: Pattern won't work for nvme; use parted name instead
-ENC_PART="${WIPE_DEVICE}2"  # TODO: Pattern won't work for nvme; use parted name instead
+BOOT_PART="/dev/disk/by-partlabel/$TAG-boo"
+ENC_PART="/dev/disk/by-partlabel/$TAG-enc"
 
 echo; echo "-------- '$WIPE_DEVICE' partitions: --------"
 parted $WIPE_DEVICE -- print
