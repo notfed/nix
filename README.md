@@ -11,7 +11,6 @@ cd nix
 setup/format <device-to-destroy>
 setup/mount
 setup/install
-cp /etc/nixos/files/face.png /mnt/var/lib/AccountsService/icons/<your-username>
 nixos-enter
 passwd <your-username>
 exit

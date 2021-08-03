@@ -68,6 +68,16 @@
   };
   users.defaultUserShell = pkgs.zsh;
 
+  # Pre-set user icon
+  system.userActivationScripts = {
+    gnomeSessionForJay = {
+      text = ''
+      cp /etc/nixos/files/AccountsService-icons-jay /var/lib/AccountsService/icons/jay
+      cp /etc/nixos/files/AccountsService-users-jay /var/lib/AccountsService/users/jay
+      '';
+    };
+  };
+
   # Disable root user
   users.users.root.hashedPassword = "!";
 
