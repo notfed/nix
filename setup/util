@@ -12,6 +12,19 @@ getpartuuid() { # usage: getpartuuid <device> <partition-number>
     lsblk -nlo PARTUUID $1 | tail -n +2 | awk "NR == $2"
 }
 
+waitfor() {
+  DEVICE=$1
+  for countdown in $( seq 240 -1 0 ); do
+    test -b $DEVICE && break
+    echo "waiting for '$DEVICE'"
+    sleep 0.25
+  done
+  if [ ! -b $DEVICE ]; then
+    echo "timed out waiting for '$DEVICE'"
+    exit 1
+  fi 
+}
+
 WIPE_DEVICE_BY_ID=$(getdiskuuid $WIPE_DEVICE)
 BOOT_PART_PARTUUID=$(getpartuuid $WIPE_DEVICE 1)
 ENC_PART_PARTUUID=$(getpartuuid $WIPE_DEVICE 2)

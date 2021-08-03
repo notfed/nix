@@ -13,8 +13,7 @@ udevadm settle
 . $SCRIPT_PARENT_PATH/util $WIPE_DEVICE
 
 cryptsetup -q luksOpen $ENC_PART_BY_PARTUUID $ENC
-sleep 0.3 # https://askubuntu.com/questions/1076491/udevadm-settle-not-working
-udevadm settle
+waitfor /dev/$VG/root # https://askubuntu.com/questions/1076491/udevadm-settle-not-working
 mount /dev/$VG/root /mnt
 mkdir -p /mnt/boot
 mount ${BOOT_PART_BY_PARTUUID} /mnt/boot
