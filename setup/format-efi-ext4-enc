@@ -47,17 +47,17 @@ echo; echo "-------- Formatting '$WIPE_DEVICE' (filesystems) --------"
 cryptsetup -q luksFormat --pbkdf argon2id $ENC_PART
 cryptsetup -q luksOpen $ENC_PART $TAG
 pvcreate /dev/mapper/$TAG
-vgcreate vg /dev/mapper/$TAG;           mkfs.vfat -F 32           $BOOT_PART
-lvcreate -L 8G         -n $TAG-swap vg; mkswap          -L "swap" /dev/vg/$TAG-swap
-lvcreate -l '100%FREE' -n $TAG-root vg; mkfs.ext4 -F    -L "root" /dev/vg/$TAG-root
+vgcreate vg-new /dev/mapper/$TAG;       mkfs.vfat -F 32           $BOOT_PART
+lvcreate -L 8G         -n $TAG-swap vg-new; mkswap          -L "swap" /dev/vg-new/$TAG-swap
+lvcreate -l '100%FREE' -n $TAG-root vg-new; mkfs.ext4 -F    -L "root" /dev/vg-new/$TAG-root
 
 echo; echo "-------- '$WIPE_DEVICE': partition summary --------"
 echo "disk $WIPE_DEVICE {"
 echo "  partition ${BOOT_PART}"
 echo "  partition ${ENC_PART} {{"
 echo "    volume-group /dev/mapper/$TAG {"
-echo "      physical-volume /dev/vg/$TAG-root"
-echo "      physical-volume /dev/vg/$TAG-swap" 
+echo "      physical-volume /dev/vg-new/$TAG-root"
+echo "      physical-volume /dev/vg-new/$TAG-swap" 
 echo "    }"
 echo "  }}"
 echo "}"
@@ -89,8 +89,8 @@ BOOT_PART_BY_UUID="/dev/disk/by-partlabel/$TAG-boo"
 ENC_PART_BY_UUID="/dev/disk/by-partlabel/$TAG-enc"
 
 echo "-------- Unmapping '$WIPE_DEVICE' --------"
-lvchange -an /dev/vg/$TAG-swap
-lvchange -an /dev/vg/$TAG-root
+lvchange -an /dev/vg-new/$TAG-swap
+lvchange -an /dev/vg-new/$TAG-root
 cryptsetup luksClose $TAG
 echo "TAG=$TAG"
 
@@ -102,7 +102,7 @@ cat << HEREDOC > $SCRIPT_PARENT_PATH/mount
 set -e
 cryptsetup -q luksOpen $ENC_PART_BY_UUID $TAG
 sleep 0.5 # TODO: Make this better. This is waiting for udev.
-mount /dev/vg/$TAG-root /mnt
+mount /dev/vg-new/$TAG-root /mnt
 mkdir -p /mnt/boot
 mount ${BOOT_PART_BY_UUID} /mnt/boot
 sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.\"${TAG}\" = { device = \"${ENC_PART_BY_UUID//\//\\/}\"; preLVM = true; };/g" boot.nix
@@ -116,8 +116,8 @@ cat << HEREDOC > $SCRIPT_PARENT_PATH/unmount
 #!/usr/bin/env sh
 umount /mnt/boot
 umount /mnt
-lvchange -an /dev/vg/$TAG-swap
-lvchange -an /dev/vg/$TAG-root
+lvchange -an /dev/vg-new/$TAG-swap
+lvchange -an /dev/vg-new/$TAG-root
 cryptsetup luksClose $TAG
 HEREDOC
 chmod 777 $SCRIPT_PARENT_PATH/unmount
