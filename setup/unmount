@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+set -e
+SCRIPT_PATH=`realpath $0`
+SCRIPT_PARENT_PATH=`dirname $SCRIPT_PATH`
+
+if [ "$#" -ne 1 ] ; then
+    echo "usage: setup/unmount <device-to-destroy>"
+    exit 1
+fi
+WIPE_DEVICE=$1
+
+. $SCRIPT_PARENT_PATH/util $WIPE_DEVICE
+
+echo; echo "-------- Umount all --------"
+set +e
+umount /mnt/boot
+umount /mnt
+lvchange -an /dev/$VG/swap
+lvchange -an /dev/$VG/root
+vgchange -an $VG
+cryptsetup luksClose $ENC

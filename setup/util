@@ -1,0 +1,21 @@
+WIPE_DEVICE=$1
+
+# Given a DISK, finds the n-th partition and outputs its ID for use in /dev/disk/by-id
+# This can then be used with /dev/disk/by-id/...
+getdiskuuid() { # usage: getdiskuuid <device>
+    udevadm info $1 -q symlink -r | sed 's/ /\n/g' | awk '/by-id/{print $0}'
+}
+
+# Given a DISK and a PARTITION NUMBER, outputs that partition's PARTUUID
+# This can then be used with /dev/disk/by-partuuid/...
+getpartuuid() { # usage: getpartuuid <device> <partition-number>
+    lsblk -nlo PARTUUID $1 | tail -n +2 | awk "NR == $2"
+}
+
+WIPE_DEVICE_BY_ID=$(getdiskuuid $WIPE_DEVICE)
+BOOT_PART_PARTUUID=$(getpartuuid $WIPE_DEVICE 1)
+ENC_PART_PARTUUID=$(getpartuuid $WIPE_DEVICE 2)
+BOOT_PART_BY_PARTUUID="/dev/disk/by-partuuid/$BOOT_PART_PARTUUID"
+ENC_PART_BY_PARTUUID="/dev/disk/by-partuuid/$ENC_PART_PARTUUID"
+VG=vg-${ENC_PART_PARTUUID//-/}
+ENC=enc-${ENC_PART_PARTUUID//-/}

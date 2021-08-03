@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+set -e
+SCRIPT_PATH=`realpath $0`
+SCRIPT_PARENT_PATH=`dirname $SCRIPT_PATH`
+
+if [ "$#" -ne 1 ] ; then
+    echo "usage: setup/mount <device-to-destroy>"
+    exit 1
+fi
+WIPE_DEVICE=$1
+
+udevadm settle
+. $SCRIPT_PARENT_PATH/util $WIPE_DEVICE
+
+cryptsetup -q luksOpen $ENC_PART_BY_PARTUUID $ENC
+udevadm settle
+mount /dev/$VG/root /mnt
+mkdir -p /mnt/boot
+mount ${BOOT_PART_BY_PARTUUID} /mnt/boot
+sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.\"${ENC}\" = { device = \"${WIPE_DEVICE_BY_ID//\//\\/}\"; preLVM = true; }; \/\* ENCRYPT-PLACEHOLDER \*\/ /g" boot.nix

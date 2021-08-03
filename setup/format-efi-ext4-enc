@@ -6,7 +6,7 @@ SCRIPT_PARENT_PATH=`dirname $SCRIPT_PATH`
 # -------- Sanity checks --------
 
 if [ "$#" -ne 1 ] ; then
-    echo "usage: ./format-ext4-enc <device-to-destroy>" 
+    echo "usage: setup/format-efi-ext4-enc <device-to-destroy>" 
     exit 1
 fi
 
@@ -25,99 +25,51 @@ fi
 
 echo; echo "-------- Formatting '$WIPE_DEVICE' partitions --------"
 
-TAG=$(xxd -u -l 16 -p /dev/urandom)
-
+# Format the disk
 wipefs -a $WIPE_DEVICE
-cat /dev/zero | head -c 4096 | dd of=$WIPE_DEVICE # Just be extra sure no MBR record
 parted -a optimal -s $WIPE_DEVICE -- \
   mklabel gpt \
-  mkpart primary 0%      512MiB  set 1 esp on \
-  mkpart primary 512MiB  100% \
-  name 1 $TAG-boo \
-  name 2 $TAG-enc
+  mkpart primary 0%      512MiB set 1 esp on \
+  mkpart primary 512MiB  100%
 
-BOOT_PART="/dev/disk/by-partlabel/$TAG-boo"
-ENC_PART="/dev/disk/by-partlabel/$TAG-enc"
+# Wait for udev to catch up
+sync
+udevadm settle
+
+# Import variables that point to disk partitions, etc
+. $SCRIPT_PARENT_PATH/util $WIPE_DEVICE
 
 echo; echo "-------- '$WIPE_DEVICE' partitions: --------"
 parted $WIPE_DEVICE -- print
 
 echo; echo "-------- Formatting '$WIPE_DEVICE' (filesystems) --------"
 
-cryptsetup -q luksFormat --pbkdf argon2id $ENC_PART
-cryptsetup -q luksOpen $ENC_PART $TAG
-pvcreate /dev/mapper/$TAG
-vgcreate vg-new /dev/mapper/$TAG;       mkfs.vfat -F 32           $BOOT_PART
-lvcreate -L 8G         -n $TAG-swap vg-new; mkswap          -L "swap" /dev/vg-new/$TAG-swap
-lvcreate -l '100%FREE' -n $TAG-root vg-new; mkfs.ext4 -F    -L "root" /dev/vg-new/$TAG-root
+cryptsetup -q luksFormat --pbkdf argon2id $ENC_PART_BY_PARTUUID
+cryptsetup -q luksOpen $ENC_PART_BY_PARTUUID $ENC
+pvcreate /dev/mapper/$ENC
+vgcreate $VG /dev/mapper/$ENC
+lvcreate -L 8G         -n swap $VG; mkswap       -L "swap" /dev/$VG/swap
+lvcreate -l '100%FREE' -n root $VG; mkfs.ext4 -F -L "root" /dev/$VG/root
+mkfs.vfat -F 32 $BOOT_PART_BY_PARTUUID
 
 echo; echo "-------- '$WIPE_DEVICE': partition summary --------"
 echo "disk $WIPE_DEVICE {"
-echo "  partition ${BOOT_PART}"
-echo "  partition ${ENC_PART} {{"
-echo "    volume-group /dev/mapper/$TAG {"
-echo "      physical-volume /dev/vg-new/$TAG-root"
-echo "      physical-volume /dev/vg-new/$TAG-swap" 
-echo "    }"
-echo "  }}"
+echo "  partition ${BOOT_PART_BY_PARTUUID}"
+echo "  partition ${ENC_PART_BY_PARTUUID} {{"
+echo "    luks (/dev/mapper/$ENC) {{"
+echo "      volume-group (/dev/$VG) {"
+echo "        physical-volume (/dev/$VG/root)"
+echo "        physical-volume (/dev/$VG/swap)" 
+echo "      }"
+echo "    }}"
 echo "}"
 echo
 
 lsblk --fs $WIPE_DEVICE
 echo
 
-echo "-------- Deriving udev paths --------"
-# Convert '/dev/sda1'-style path to '/dev/disk/by-uuid/123e4567-e89b-12d3-a456-426614174000' (BETA)
-getpartbyuuid() { # usage: getpartbyuuid <device> <partition-number>
-    UUID=""
-    while [ -z "$UUID" ]; do
-       echo "1=$1" >&2
-       echo "2=$2" >&2
-       echo "running: lsblk -n -o UUID $1 | tail -n +2 | awk NR == $2" >&2
-       sleep 0.1
-       UUID=$(lsblk -n -o UUID $1 | tail -n +2 | awk "NR == $2")
-    done
-    echo "/dev/disk/by-uuid/$UUID"
-}
-# Convert '/dev/sda'-style path to '/dev/disk/by-id/ata-TH481GSSA118T_92341821821181212128' (BETA)
-getdevicebyuuid() { # usage: getdeviceuuid <device>
-  udevadm info $1 -q symlink -r | sed 's/ /\n/g' | awk '/by-id/{print $0}'
-}
-
-WIPE_DEVICE_BY_ID=$(udevadm info $WIPE_DEVICE -q symlink -r | sed 's/ /\n/g' | awk '/by-id/{print $0}')
-BOOT_PART_BY_UUID="/dev/disk/by-partlabel/$TAG-boo"
-ENC_PART_BY_UUID="/dev/disk/by-partlabel/$TAG-enc"
-
 echo "-------- Unmapping '$WIPE_DEVICE' --------"
-lvchange -an /dev/vg-new/$TAG-swap
-lvchange -an /dev/vg-new/$TAG-root
-cryptsetup luksClose $TAG
-echo "TAG=$TAG"
-
-echo "-------- Mounting '$WIPE_DEVICE' --------"
-
-echo "WRITING TO '$SCRIPT_PARENT_PATH/mount'"
-cat << HEREDOC > $SCRIPT_PARENT_PATH/mount
-#!/usr/bin/env sh
-set -e
-cryptsetup -q luksOpen $ENC_PART_BY_UUID $TAG
-sleep 0.5 # TODO: Make this better. This is waiting for udev.
-mount /dev/vg-new/$TAG-root /mnt
-mkdir -p /mnt/boot
-mount ${BOOT_PART_BY_UUID} /mnt/boot
-sed -i "s/^.*ENCRYPT-PLACEHOLDER.*$/  boot.initrd.luks.devices.\"${TAG}\" = { device = \"${ENC_PART_BY_UUID//\//\\/}\"; preLVM = true; };/g" boot.nix
-#sed -i "s/^.*GRUB-DEVICE-PLACEHOLDER.*$/  boot.loader.grub.device = \"${WIPE_DEVICE_BY_ID//\//\\/}\";/g" boot.nix
-HEREDOC
-chmod 777 $SCRIPT_PARENT_PATH/mount
- 
-echo; echo "-------- Umount all --------"
-echo "WRITING TO '$SCRIPT_PARENT_PATH/unmount'"
-cat << HEREDOC > $SCRIPT_PARENT_PATH/unmount
-#!/usr/bin/env sh
-umount /mnt/boot
-umount /mnt
-lvchange -an /dev/vg-new/$TAG-swap
-lvchange -an /dev/vg-new/$TAG-root
-cryptsetup luksClose $TAG
-HEREDOC
-chmod 777 $SCRIPT_PARENT_PATH/unmount
+lvchange -an /dev/$VG/swap
+lvchange -an /dev/$VG/root
+vgchange -an $VG
+cryptsetup luksClose $ENC
