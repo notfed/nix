@@ -18,6 +18,9 @@
   # Linux kernel
   boot.kernelPackages = pkgs.linuxPackages_5_12;
 
+  # Squelch pre-password boot messages
+  boot.consoleLogLevel = 0;
+
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Time zone
