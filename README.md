@@ -9,12 +9,12 @@ Do all of this in a live USB of [Nixos](https://nixos.org/download.html), as the
 git clone https://github.com/notfed/nix
 cd nix
 setup/format <device-to-destroy>
-setup/mount
+setup/mount <device-to-destroy>
 setup/install
 nixos-enter
 passwd <your-username>
 exit
-setup/unmount
+setup/unmount <device-to-destroy>
 ```
 
 Reboot. Log in as <your-username>. Run:
