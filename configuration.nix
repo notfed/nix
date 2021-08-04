@@ -69,7 +69,7 @@
   users.defaultUserShell = pkgs.zsh;
 
   # Pre-set user icon
-  system.userActivationScripts = {
+  system.activationScripts = {
     gnomeSessionForJay = {
       text = ''
       cp /etc/nixos/files/AccountsService-icons-jay /var/lib/AccountsService/icons/jay
