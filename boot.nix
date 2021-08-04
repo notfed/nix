@@ -7,6 +7,13 @@
   boot.loader.grub.splashImage = ./files/background.jpg;
   boot.loader.grub.efiInstallAsRemovable = true;
   boot.loader.efi.canTouchEfiVariables = false;
+  boot.loader.grub.extraConfig = ''
+    if keystatus --shift ; then
+       set timeout=-1
+    else
+       set timeout=0
+    fi
+  '';
 
   # LUKS
   /* ENCRYPT-PLACEHOLDER */ 
