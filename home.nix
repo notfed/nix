@@ -134,6 +134,14 @@ in {
     "org/gnome/desktop/screensaver" = {
       "picture-uri" = "/home/jay/.background-image";
     };
+    "org/gnome/shell" = {
+      favorite-apps = [
+        "google-chrome.desktop"
+        "firefox.desktop"
+        "code.desktop"
+        "org.gnome.Nautilus.desktop"
+      ];
+    };
   };
 
   # -------- Custom Files  --------
