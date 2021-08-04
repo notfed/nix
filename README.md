@@ -4,7 +4,6 @@
 
 Do all of this in a live USB of [Nixos](https://nixos.org/download.html), as the `root` user.
 
-
 ```
 git clone https://github.com/notfed/nix
 cd nix
