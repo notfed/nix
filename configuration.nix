@@ -75,6 +75,8 @@
   system.activationScripts = {
     gnomeSessionForJay = {
       text = ''
+      mkdir -p /var/lib/AccountsService/icons/
+      mkdir -p /var/lib/AccountsService/users/
       cp /etc/nixos/files/AccountsService-icons-jay /var/lib/AccountsService/icons/jay
       cp /etc/nixos/files/AccountsService-users-jay /var/lib/AccountsService/users/jay
       '';
