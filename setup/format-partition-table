@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+set -x
+# Given a disk device, format it with a new partition table.
+# There must be at least two partitions:
+# - The first partition will be used as the boot partition.
+# - The second partition will be used as the root partition.
+TARGET_DEVICE=$1
+parted -a optimal -s $TARGET_DEVICE -- \
+  mklabel gpt \
+  mkpart primary 0%      512MiB set 1 esp on \
+  mkpart primary 512MiB  100%

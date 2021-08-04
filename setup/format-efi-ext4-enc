@@ -27,10 +27,7 @@ echo; echo "-------- Formatting '$WIPE_DEVICE' partitions --------"
 
 # Format the disk
 wipefs -a $WIPE_DEVICE
-parted -a optimal -s $WIPE_DEVICE -- \
-  mklabel gpt \
-  mkpart primary 0%      512MiB set 1 esp on \
-  mkpart primary 512MiB  100%
+$SCRIPT_PARENT_PATH/format-partition-table $WIPE_DEVICE
 
 # Wait for udev to catch up
 sync
@@ -48,9 +45,7 @@ cryptsetup -q luksFormat --pbkdf argon2id $ENC_PART_BY_PARTUUID
 cryptsetup -q luksOpen $ENC_PART_BY_PARTUUID $ENC
 pvcreate /dev/mapper/$ENC
 vgcreate $VG /dev/mapper/$ENC
-lvcreate -L 8G         -n swap $VG; mkswap       -L "swap" /dev/$VG/swap
-lvcreate -l '100%FREE' -n root $VG; mkfs.ext4 -F -L "root" /dev/$VG/root
-mkfs.vfat -F 32 $BOOT_PART_BY_PARTUUID
+$SCRIPT_PARENT_PATH/format-partitions $BOOT_PART_BY_PARTUUID $VG
 
 echo; echo "-------- '$WIPE_DEVICE': partition summary --------"
 echo "disk $WIPE_DEVICE {"

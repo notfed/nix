@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+set -x
+# Given a boot partition, format it
+BOOT_PARTITION=$1
+mkfs.vfat -F 32 $BOOT_PARTITION
+
+# Given a mounted volume group, populate it with volumes, and format those volumes
+# (you must at least add one volume named 'root')
+VG=$2
+lvcreate --size 8G     --name "swap" $VG; mkswap       /dev/$VG/swap
+lvcreate -l '100%FREE' --name "root" $VG; mkfs.ext4 -F /dev/$VG/root
+
