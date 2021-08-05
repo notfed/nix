@@ -10,7 +10,10 @@
         # Include the results of the hardware scan.
       	./hardware-configuration.nix
       	./boot.nix
+        ./luksroot.nix
     ];
+
+  disabledModules = [ "system/boot/luksroot.nix" ];
 
   # SSD Performance
   fileSystems."/".options = [ "noatime" "nodiratime" ];

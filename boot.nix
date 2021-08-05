@@ -16,5 +16,5 @@
   '';
 
   # LUKS
-  /* ENCRYPT-PLACEHOLDER */ 
+  boot.initrd.luks.devices."enc-9505b3f2155c495eaa42f640941a0917" = { device = "/dev/disk/by-partuuid/9505b3f2-155c-495e-aa42-f640941a0917"; deviceDisplayName = "whatever"; preLVM = true; }; /* ENCRYPT-PLACEHOLDER */ 
 }
