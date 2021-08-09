@@ -15,6 +15,19 @@
 
   disabledModules = [ "system/boot/luksroot.nix" ];
 
+  # Packages
+  nixpkgs.config.allowUnfree = true;
+  environment.systemPackages = with pkgs; [
+      gparted parted cryptsetup
+      wget file
+      vim vim_configurable
+      zsh
+      dconf
+      firefox
+  ];
+
+  system.autoUpgrade.channel = "https://nixos.org/channels/nixos-21.05/";
+
   # SSD Performance
   fileSystems."/".options = [ "noatime" "nodiratime" ];
 
@@ -52,17 +65,6 @@
   # Enable sound.
   sound.enable = true;
   hardware.pulseaudio.enable = true;
-
-  # Packages
-  nixpkgs.config.allowUnfree = true;
-  environment.systemPackages = with pkgs; [
-      gparted parted cryptsetup
-      wget file
-      vim vim_configurable
-      zsh
-      dconf
-      firefox
-  ];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jay = {
