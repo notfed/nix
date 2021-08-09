@@ -14,7 +14,6 @@ in {
     clang-tools automake autoconf gnutar gzip gnumake binutils-unwrapped
     gawk gnused gnugrep cmake gdb gnumake  coreutils-full
     rustup
-    pipenv python3
 
     # ---- CLI ---- 
     alacritty 
@@ -158,4 +157,5 @@ in {
     PATH = "$HOME/.local/bin:$HOME/.cargo/bin:$PATH";
     NIX_PATH = "$HOME/.nix-defexpr/channels:$NIX_PATH";
   };
+
 }
