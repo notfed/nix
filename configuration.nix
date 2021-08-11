@@ -16,6 +16,7 @@
   disabledModules = [ "system/boot/luksroot.nix" ];
 
   # Packages
+  system.autoUpgrade.channel = "https://nixos.org/channels/nixos-21.05/";
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
       gparted parted cryptsetup
@@ -26,13 +27,14 @@
       firefox
   ];
 
-  system.autoUpgrade.channel = "https://nixos.org/channels/nixos-21.05/";
+  # Bug fix https://github.com/NixOS/nixpkgs/issues/43989
+  environment.etc."libblockdev/conf.d/00-default.cfg".source = "${pkgs.libblockdev}/etc/libblockdev/conf.d/00-default.cfg";
 
   # SSD Performance
   fileSystems."/".options = [ "noatime" "nodiratime" ];
 
   # Linux kernel
-  boot.kernelPackages = pkgs.linuxPackages_5_12;
+  boot.kernelPackages = pkgs.linuxPackages_latest; #pkgs.linuxPackages_5_12;
 
   # Squelch pre-password boot messages
   boot.consoleLogLevel = 0;
