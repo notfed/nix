@@ -26,10 +26,10 @@
       dconf
       firefox
       virtmanager libguestfs qemu_kvm busybox # Virtualization
-  ];
+ ];
 
 
-  # Virtualization
+  # ---- Virtualization: START ----
   virtualisation.libvirtd = {
     enable = true;
 
@@ -52,10 +52,18 @@
       mode = "0644";
       user = "libvirtd";
   };
-  environment.etc."/etc/modprobe.d/local.conf".text = ''
+  # Assign GTX 960 to vfio
+  #environment.etc."modprobe.d/local.conf".text = ''
+  #alias pci:v000010DEd00001401sv00001462sd00003201bc03sc00i00 vfio-pci
+  #alias pci:v000010DEd00000FBAsv00001462sd00003201bc04sc03i00 vfio-pci
+  #options vfio-pci ids=10de:1401,10de:0fba
+  #options vfio-pci disable_vga=1
+  #'';
+  # Assign GTX 1070 to vfio
+  environment.etc."modprobe.d/local.conf".text = ''
+  alias pci:v000010DEd00001B81sv00001462sd00003301bc03sc00i00 vfio-pci
   alias pci:v000010DEd00001401sv00001462sd00003201bc03sc00i00 vfio-pci
-  alias pci:v000010DEd00000FBAsv00001462sd00003201bc04sc03i00 vfio-pci
-  options vfio-pci ids=10de:1401,10de:0fba
+  options vfio-pci ids=10de:1b81,10de:10f0
   options vfio-pci disable_vga=1
   '';
 
@@ -95,7 +103,7 @@
     '';
   };
 
-  # ACS Override Patch: (already included in zen kernel)
+  ### ACS Override Patch (not needed, b/c already included in zen kernel)
   ##nixpkgs.config.packageOverrides = pkgs: {
   ##    linux_5_15 = pkgs.linux_5_15.override {
   ##      kernelPatches = pkgs.linux_5_15.kernelPatches ++ [
@@ -108,7 +116,11 @@
   ##      ];
   ##    };
   ##  };
+
+  ## Needed?
   ## boot.kernel.sysctl = { "net.ipv4.ip_forward" = 1; };
+
+  # ---- Virtualization: END ----
  
   # Bug fix https://github.com/NixOS/nixpkgs/issues/43989
   environment.etc."libblockdev/conf.d/00-default.cfg".source = "${pkgs.libblockdev}/etc/libblockdev/conf.d/00-default.cfg";
