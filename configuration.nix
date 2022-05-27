@@ -26,6 +26,7 @@
       dconf
       firefox
       virtmanager libguestfs qemu_kvm # Virtualization
+      helvum
  ];
 
   # ---- Virtualization: START ----
@@ -172,9 +173,9 @@
     enable = true;
     alsa.enable = true;
     alsa.support32Bit = true;
+    jack.enable = true;
     pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
+    socketActivation = true;
   };
   hardware.pulseaudio.enable = false; # Or, set to true to use pulseaudio instead of pipewire
 

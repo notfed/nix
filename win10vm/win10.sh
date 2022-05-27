@@ -8,12 +8,12 @@ if ps -ef | grep qemu-system-x86_64 | grep -q multifunction=on; then
 else
 
 # ---- TODO: Do these permission updates automatically ----
-#chown jay /dev/vfio/19
-#sudo chown jay /dev/input/by-id/usb-Logitech_USB_Receiver-if02-event-mouse
-#sudo chown jay /dev/input/by-id/usb-Yiancar-Designs_NK65_0-event-kbd
-#sudo chown jay /sys/bus/pci/devices/0000:02:00.0/config
-#sudo chown jay /sys/bus/pci/devices/0000:02:00.1/config
-#sudo chown jay /dev/vfio/*
+sudo chown jay /dev/vfio/19
+sudo chown jay /dev/input/by-id/usb-Logitech_USB_Receiver-if02-event-mouse
+sudo chown jay /dev/input/by-id/usb-Yiancar-Designs_NK65_0-event-kbd
+sudo chown jay /sys/bus/pci/devices/0000:02:00.0/config
+sudo chown jay /sys/bus/pci/devices/0000:02:00.1/config
+sudo chown jay /dev/vfio/*
 
 VM_NAME="win10"
 OS_IMG=$DIR/win10.img
@@ -25,6 +25,10 @@ OVMF_CODE=/etc/ovmf/edk2-x86_64-secure-code.fd
 KEYBOARD_EVDEV_DEVICE=/dev/input/by-id/usb-Yiancar-Designs_NK65_0-event-kbd
 MOUSE_EVDEV_DEVICE=/dev/input/by-id/usb-Logitech_USB_Receiver-if02-event-mouse
 
+#export PIPEWIRE_RUNTIME_DIR=/run/user/1000
+#export PIPEWIRE_LATENCY="512/48000"
+
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/run/current-system/sw/lib/pipewire
 qemu-system-x86_64 \
     -name $VM_NAME,process=$VM_NAME \
     -machine type=q35,accel=kvm \
@@ -36,7 +40,6 @@ qemu-system-x86_64 \
     -nographic \
     -serial none \
     -parallel none \
-    -device ich9-intel-hda,bus=pcie.0,addr=0x1b \
     -usb \
     -object input-linux,id=keyboard1,evdev=$KEYBOARD_EVDEV_DEVICE,grab_all=on,repeat=on \
     -object input-linux,id=mouse1,evdev=$MOUSE_EVDEV_DEVICE \
@@ -46,9 +49,16 @@ qemu-system-x86_64 \
     -drive if=pflash,format=raw,file=$OVMF_VARS \
     -boot order=dc \
     -drive id=disk0,if=virtio,cache=none,format=raw,file=$OS_IMG \
-    -drive file=$OS_ISO,index=1,media=cdrom \
-    -drive file=$VIRTIO_ISO,index=2,media=cdrom
+    -drive file=$VIRTIO_ISO,index=2,media=cdrom \
+    -audiodev pa,id=hda,server=unix:/run/user/1000/pulse/native,out.buffer-length=512,timer-period=1000 -device ich9-intel-hda -device hda-duplex,audiodev=hda
+    #-device ich9-intel-hda,bus=pcie.0,addr=0x1b
+    #-audiodev jack,id=ad0 -device ich9-intel-hda -device hda-duplex,audiodev=ad0
+    #-drive file=$OS_ISO,index=1,media=cdrom \
 fi
+
+
+   # -device ich9-intel-hda \
+    #-audiodev pa,id=hda,out.mixing-engine=off \
 
 # ---- SOUND ENV VARS ----
 
