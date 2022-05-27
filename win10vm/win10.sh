@@ -93,23 +93,7 @@ fi
 #-device usb-host,vendorid=0x046d,productid=0xc539 
 #-device usb-host,vendorid=0x8968,productid=0x4e4b 
 #-netdev type=tap,id=net0,ifname=vmtap0,vhost=off 
-
-#-device ich9-intel-hda,bus=pcie.0,addr=0x1b \
-#-device hda-micro,audiodev=hda \
-#-audiodev pa,id=hda,server=unix:/tmp/pulse-socket,out.buffer-length=512,timer-period=1000 \
-#-device usb-audio,audiodev=usb,multi=on \
-#-audiodev pa,id=usb,server=unix:/tmp/pulse-socket,out.mixing-engine=off,out.buffer-length=512,timer-period=1000 \
-
-
-
-# -device ich9-intel-hda,bus=pcie.0,addr=0x1b \
-# -device hda-micro,audiodev=hda \
-# -device pa,id=hda,server=unix:/run/user/1000/pulse/native \
-
-
-
 #-device ich9-intel-hda,bus=pcie.0,addr=0x1b \
 #-device hda-micro,audiodev=hda \
 #-audiodev pa,id=hda,server=unix:/run/user/1000/pulse/native,out.buffer-length=512,timer-period=1000 \
-#-device usb-audio,audiodev=usb,multi=on \
 #-audiodev pa,id=usb,server=unix:/run/user/1000/pulse/native,out.mixing-engine=off,out.buffer-length=512,timer-period=1000

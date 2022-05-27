@@ -1,14 +1,6 @@
-{ config, ... }:
-
 {
   # Bootloader, EFI
   boot = {
-
-    kernelParams = [ "intel_iommu=on" "iommu=pt" "pcie_acs_override=downstream"];
-    kernelModules = [ "vfio" "vfio-pci" "vfio_iommu_type1" "kvm-intel" "vhost-net" ];
-
-    # Virtualization
-    #intel_iommu=on
 
     # MBP 2018
     #extraModulePackages = with config.boot.kernelPackages; [ mbp2018-bridge-drv ];
@@ -42,5 +34,9 @@
   };
 
   # LUKS
-  /* ENCRYPT-PLACEHOLDER */
+  boot.initrd.luks.devices.enc-64ee7fbd259f424f81e8e3e202c606c2 = { 
+      deviceDisplayName = "/"; 
+      device = "/dev/disk/by-partuuid/64ee7fbd-259f-424f-81e8-e3e202c606c2";
+      preLVM = true; 
+  }; 
 }

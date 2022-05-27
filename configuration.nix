@@ -4,7 +4,8 @@
 
 { config, pkgs, ... }:
 
-{
+let gpu_passthrough_pci_ids = "10de:1b81,10de:10f0";
+in {
   imports =
     [ 
         # Include the results of the hardware scan.
@@ -12,6 +13,9 @@
       	./boot.nix
         ./luksroot.nix
     ];
+
+  boot.kernelParams = [ "intel_iommu=on" "iommu=pt" "pcie_acs_override=downstream" "vfio-pci.ids=${gpu_passthrough_pci_ids}" ];
+  boot.kernelModules = [ "vfio" "vfio-pci" "vfio_iommu_type1" "kvm-intel" "vhost-net" ];
 
   disabledModules = [ "system/boot/luksroot.nix" ];
 
@@ -30,6 +34,20 @@
  ];
 
   # ---- Virtualization: START ----
+
+  # Assign GPU to vfio-pci driver
+  boot.extraModprobeConfig = ''
+  options vfio-pci ids=${gpu_passthrough_pci_ids}
+  softdep radeon pre: vfio-pci
+  softdep amdgpu pre: vfio-pci
+  softdep nouveau pre: vfio-pci
+  softdep nvidia pre: vfio-pci 
+  softdep nvidia* pre: vfio-pci
+  softdep drm pre: vfio-pci
+  options kvm_amd avic=1
+  options kvm ignore_msrs=1
+  '';
+
   virtualisation.libvirtd = {
     enable = true;
 
@@ -43,6 +61,7 @@
       runAsRoot = false;
     };
   };
+
   security.pam.loginLimits = [
     { domain = "*"; type = "soft"; item = "memlock"; value = "1048576000"; }
     { domain = "*"; type = "hard"; item = "memlock"; value = "1048576000"; }
@@ -51,65 +70,16 @@
   environment.etc."ovmf/edk2-x86_64-secure-code.fd" = {
       source = config.virtualisation.libvirtd.qemu.package + "/share/qemu/edk2-x86_64-secure-code.fd";
   };
+  
   environment.etc."ovmf/edk2-i386-vars.fd" = {
       source = config.virtualisation.libvirtd.qemu.package + "/share/qemu/edk2-i386-vars.fd";
       mode = "0644";
       user = "libvirtd";
   };
-  # Assign GTX 960 to vfio
-  #environment.etc."modprobe.d/local.conf".text = ''
-  #alias pci:v000010DEd00001401sv00001462sd00003201bc03sc00i00 vfio-pci
-  #alias pci:v000010DEd00000FBAsv00001462sd00003201bc04sc03i00 vfio-pci
-  #options vfio-pci ids=10de:1401,10de:0fba
-  #options vfio-pci disable_vga=1
-  #'';
-  # Assign GTX 1070 to vfio
-  #'';
-  boot.extraModprobeConfig = ''
-  alias pci:v000010DEd00001B81sv00001462sd00003301bc03sc00i00 vfio-pci
-  alias pci:v000010DEd00001401sv00001462sd00003201bc03sc00i00 vfio-pci
-  options vfio-pci ids=10de:1b81,10de:10f0
-  options vfio-pci disable_vga=1
-  '';
-
 
   programs.dconf.enable = true;
-  systemd.services.libvirtd = {
-    path = let
-             env = pkgs.buildEnv {
-               name = "qemu-hook-env";
-               paths = with pkgs; [
-                 bash
-                 libvirt
-                 kmod
-                 systemd
-                 ripgrep
-                 sd
-               ];
-             };
-           in
-           [ env ];
-  
-    preStart =
-    ''
-      mkdir -p /var/lib/libvirt/hooks
-      mkdir -p /var/lib/libvirt/hooks/qemu.d/win10/prepare/begin
-      mkdir -p /var/lib/libvirt/hooks/qemu.d/win10/release/end
-      mkdir -p /var/lib/libvirt/vgabios
-      
-      ln -sf /etc/nixos/files/qemu /var/lib/libvirt/hooks/qemu
-      ln -sf /etc/nixos/files/kvm.conf /var/lib/libvirt/hooks/kvm.conf
-      ln -sf /etc/nixos/files/start.sh /var/lib/libvirt/hooks/qemu.d/win10/prepare/begin/start.sh
-      ln -sf /etc/nixos/files/stop.sh /var/lib/libvirt/hooks/qemu.d/win10/release/end/stop.sh
-      
-      chmod +x /var/lib/libvirt/hooks/qemu
-      chmod +x /var/lib/libvirt/hooks/kvm.conf
-      chmod +x /var/lib/libvirt/hooks/qemu.d/win10/prepare/begin/start.sh
-      chmod +x /var/lib/libvirt/hooks/qemu.d/win10/release/end/stop.sh
-    '';
-  };
 
-  ### ACS Override Patch (not needed, b/c already included in zen kernel)
+  ### ACS Override Patch (not needed, because already included in zen kernel)
   ##nixpkgs.config.packageOverrides = pkgs: {
   ##    linux_5_15 = pkgs.linux_5_15.override {
   ##      kernelPatches = pkgs.linux_5_15.kernelPatches ++ [
@@ -122,10 +92,7 @@
   ##      ];
   ##    };
   ##  };
-
-  ## Needed?
-  ## boot.kernel.sysctl = { "net.ipv4.ip_forward" = 1; };
-
+  
   # ---- Virtualization: END ----
  
   # Bug fix https://github.com/NixOS/nixpkgs/issues/43989
@@ -136,7 +103,7 @@
 
   # Linux kernel
   # boot.kernelPackages = pkgs.linuxPackages_latest; #pkgs.linuxPackages_5_12;
-  boot.kernelPackages = pkgs.linuxPackages_zen; # Includes ACS Override patch, which allows iommu group separation, for gpu passthrough
+  boot.kernelPackages = pkgs.linuxPackages_zen; # Includes ACS Override patch, which allows iommu group isolation, needed for gpu passthrough
 
   # Squelch pre-password boot messages
   boot.consoleLogLevel = 0;
@@ -144,7 +111,7 @@
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Time zone
-  time.timeZone = "America/New_York";
+  time.timeZone = "America/Los_Angeles";
 
   # Networking
   networking.hostName = "nixos";
@@ -166,7 +133,7 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  # Enable pipewire (:or sound)
+  # Enable sound (pipewire)
   sound.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
