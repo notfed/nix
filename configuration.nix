@@ -25,9 +25,8 @@
       zsh
       dconf
       firefox
-      virtmanager libguestfs qemu_kvm busybox # Virtualization
+      virtmanager libguestfs qemu_kvm # Virtualization
  ];
-
 
   # ---- Virtualization: START ----
   virtualisation.libvirtd = {
@@ -43,6 +42,10 @@
       runAsRoot = false;
     };
   };
+  security.pam.loginLimits = [
+    { domain = "*"; type = "soft"; item = "memlock"; value = "1048576000"; }
+    { domain = "*"; type = "hard"; item = "memlock"; value = "1048576000"; }
+  ];
 
   environment.etc."ovmf/edk2-x86_64-secure-code.fd" = {
       source = config.virtualisation.libvirtd.qemu.package + "/share/qemu/edk2-x86_64-secure-code.fd";
@@ -60,12 +63,14 @@
   #options vfio-pci disable_vga=1
   #'';
   # Assign GTX 1070 to vfio
-  environment.etc."modprobe.d/local.conf".text = ''
+  #'';
+  boot.extraModprobeConfig = ''
   alias pci:v000010DEd00001B81sv00001462sd00003301bc03sc00i00 vfio-pci
   alias pci:v000010DEd00001401sv00001462sd00003201bc03sc00i00 vfio-pci
   options vfio-pci ids=10de:1b81,10de:10f0
   options vfio-pci disable_vga=1
   '';
+
 
   programs.dconf.enable = true;
   systemd.services.libvirtd = {
@@ -160,9 +165,18 @@
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  # Enable sound.
+  # Enable pipewire (:or sound)
   sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    # If you want to use JACK applications, uncomment this
+    #jack.enable = true;
+  };
+  hardware.pulseaudio.enable = false; # Or, set to true to use pulseaudio instead of pipewire
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jay = {
