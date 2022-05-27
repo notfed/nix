@@ -1,0 +1,20 @@
+#!/bin/sh 
+echo "==== NVIDIA devices ===="
+
+echo "---- Devices ----"
+lspci | grep NVIDIA | awk '{ print "0000:"$1 }' | xargs -i lspci -nnk -s '{}'
+echo "---- Respective modprobe ids:----"
+lspci | grep NVIDIA | awk '{ printf "0000:%s\n", $1 }'  | xargs -i cat '/sys/bus/pci/devices/{}/modalias'
+
+echo "==== Modprobe settings (this is hardcoded) ====" 
+echo "---- GTX 1070 ----"
+echo "alias pci:v000010DEd00001B81sv00001462sd00003301bc03sc00i00 vfio-pci"
+echo "alias pci:v000010DEd00001401sv00001462sd00003201bc03sc00i00 vfio-pci"
+echo "options vfio-pci ids=10de:1b81,10de:10f0"
+echo "options vfio-pci disable_vga=1"
+
+echo "---- GTX 960 ----"
+echo "alias pci:v000010DEd00001401sv00001462sd00003201bc03sc00i00 vfio-pci"
+echo "alias pci:v000010DEd00000FBAsv00001462sd00003201bc04sc03i00 vfio-pci"
+echo "options vfio-pci ids=10de:1401,10de:0fba"
+echo "options vfio-pci disable_vga=1"
