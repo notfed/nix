@@ -23,15 +23,19 @@ in {
   system.autoUpgrade.channel = "https://nixos.org/channels/nixos-21.11/";
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
-      gparted parted cryptsetup
+      # Misc
       wget file
-      vim vim_configurable
       zsh
       dconf
+      # Web
       firefox
-      virtmanager libguestfs qemu_kvm # Virtualization
+      # Filesystems
+      gparted parted cryptsetup
+      # Virtualization
+      virt-manager libvirt libguestfs qemu_kvm
+      # Sound
       helvum
- ];
+  ];
 
   # ---- Virtualization: START ----
 
@@ -76,6 +80,13 @@ in {
       mode = "0644";
       user = "libvirtd";
   };
+
+  # Allow passthrough of certain USB devices to QEMU
+  services.udev.extraRules = ''
+      SUBSYSTEM=="vfio", TAG+="uaccess"
+      SUBSYSTEM=="usb", ATTRS{idVendor}=="8968", ATTR{idProduct}=="4e4b", TAG+="uaccess", GROUP="kvm"
+      SUBSYSTEM=="usb", ATTRS{idVendor}=="046d", ATTR{idProduct}=="c539, TAG+="uaccess", GROUP="kvm"
+  '';
 
   programs.dconf.enable = true;
 
@@ -152,7 +163,7 @@ in {
       isNormalUser = true;
       isSystemUser = false;
       home = "/home/jay";
-      extraGroups = [ "wheel" "libvirtd" ];
+      extraGroups = [ "wheel" "libvirtd" "kvm" ];
   };
   users.defaultUserShell = pkgs.zsh;
 

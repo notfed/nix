@@ -14,6 +14,8 @@ in {
     clang-tools automake autoconf gnutar gzip gnumake binutils-unwrapped
     gawk gnused gnugrep cmake gdb gnumake  coreutils-full
     rustup
+    nodejs
+    python39Full python39Packages.pylint
 
     # ---- CLI ---- 
     alacritty 
@@ -45,6 +47,31 @@ in {
   programs.home-manager.enable = true;
   programs.autojump.enable = true;
   programs.direnv.enable = true;
+
+  # ---- Neovim ----
+  programs.neovim = {
+    viAlias = true;
+    vimAlias = true;
+    enable = true;
+    withPython3 = true;
+    plugins = with pkgs.vimPlugins; [
+    ];
+    extraPackages = with pkgs; [
+      (python3.withPackages (ps: with ps; [
+        black
+        flake8
+      ]))
+    ];
+    extraPython3Packages = (ps: with ps; [
+      jedi
+    ]);
+    extraConfig = ''
+    set expandtab
+    set shiftwidth=4
+    set tabstop=4
+    '';
+  };
+ #xdg.configFile."nvim/coc-settings.json".text = builtins.readFile ./my-coc-settings.json;
 
   # -------- Configuration  --------
 
@@ -102,7 +129,7 @@ in {
       enable = true;
       package = pkgs.vscode;
       extensions = with pkgs.vscode-extensions; [
-          bbenoist.Nix
+          bbenoist.nix
       ];
       userSettings = {
           "editor.mouseWheelZoom" = "true";
