@@ -25,10 +25,11 @@ OVMF_CODE=/etc/ovmf/edk2-x86_64-secure-code.fd
 KEYBOARD_EVDEV_DEVICE=/dev/input/by-id/usb-Yiancar-Designs_NK65_0-event-kbd
 MOUSE_EVDEV_DEVICE=/dev/input/by-id/usb-Logitech_USB_Receiver-if02-event-mouse
 
-#export PIPEWIRE_RUNTIME_DIR=/run/user/1000
-#export PIPEWIRE_LATENCY="512/48000"
+export PIPEWIRE_RUNTIME_DIR=/run/user/1000
+export PIPEWIRE_LATENCY="512/44100"
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/run/current-system/sw/lib/pipewire
+#/nix/store/6kjpfn3gx76sar05k18my2jfrs221pra-qemu-7.0.0/bin/qemu-system-x86_64 
 qemu-system-x86_64 \
     -name $VM_NAME,process=$VM_NAME \
     -machine type=q35,accel=kvm \
@@ -50,7 +51,8 @@ qemu-system-x86_64 \
     -boot order=dc \
     -drive id=disk0,if=virtio,cache=none,format=raw,file=$OS_IMG \
     -drive file=$VIRTIO_ISO,index=2,media=cdrom \
-    -audiodev pa,id=hda,server=unix:/run/user/1000/pulse/native,out.buffer-length=512,timer-period=1000 -device ich9-intel-hda -device hda-duplex,audiodev=hda
+    -audiodev jack,id=ad0 -device ich9-intel-hda -device hda-duplex,audiodev=ad0
+    #-audiodev pa,id=hda,server=unix:/run/user/1000/pulse/native,out.buffer-length=512,timer-period=1000 -device ich9-intel-hda -device hda-duplex,audiodev=hda
     #-device ich9-intel-hda,bus=pcie.0,addr=0x1b
     #-audiodev jack,id=ad0 -device ich9-intel-hda -device hda-duplex,audiodev=ad0
     #-drive file=$OS_ISO,index=1,media=cdrom \

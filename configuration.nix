@@ -20,7 +20,7 @@ in {
   disabledModules = [ "system/boot/luksroot.nix" ];
 
   # Packages
-  system.autoUpgrade.channel = "https://nixos.org/channels/nixos-21.11/";
+  #system.autoUpgrade.channel = "https://nixos.org/channels/nixos-22.05/";
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
       # Misc
@@ -37,7 +37,7 @@ in {
       # Virtualization
       virt-manager libvirt libguestfs qemu_kvm
       # Sound
-      helvum
+      helvum bluez bluez-tools jack2Full jack_capture qjackctl 
   ];
 
   # ---- Remoting ----
@@ -97,10 +97,10 @@ in {
   };
 
   # (Raw qemu) Increase RAM usage limits
-  #security.pam.loginLimits = [
-  #  { domain = "*"; type = "soft"; item = "memlock"; value = "1048576000"; }
-  #  { domain = "*"; type = "hard"; item = "memlock"; value = "1048576000"; }
-  #];
+  security.pam.loginLimits = [
+    { domain = "*"; type = "soft"; item = "memlock"; value = "1048576000"; }
+    { domain = "*"; type = "hard"; item = "memlock"; value = "1048576000"; }
+  ];
 
   # Place UEFI roms at a static location
   environment.etc."ovmf/edk2-x86_64-secure-code.fd" = {
@@ -177,6 +177,8 @@ in {
   services.printing.enable = true;
 
   # Enable sound (pipewire)
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.hsphfpd.enable = true;
   sound.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -186,6 +188,12 @@ in {
     jack.enable = true;
     pulse.enable = true;
     socketActivation = true;
+    # No idea if this works:
+    config.pipewire = {
+        "context.properties" = {
+          "default.clock.allowed-rates" = [ 44100 48000 ];
+        };
+    };
   };
   hardware.pulseaudio.enable = false; # Or, set to true to use pulseaudio instead of pipewire
 
