@@ -27,6 +27,9 @@ in {
       wget file
       zsh
       dconf
+      x2goserver
+      # Gnome
+      gnome.gnome-packagekit
       # Web
       firefox
       # Filesystems
@@ -37,8 +40,12 @@ in {
       helvum
   ];
 
-  # ---- Virtualization: START ----
+  # ---- Remoting ----
+  services.sshd.enable = true;
+  services.x2goserver.enable = true;
 
+  # ---- Virtualization: START ----
+  
   # Assign GPU to vfio-pci driver
   boot.extraModprobeConfig = ''
   options vfio-pci ids=${gpu_passthrough_pci_ids}
@@ -52,6 +59,10 @@ in {
   options kvm ignore_msrs=1
   '';
 
+  # Allow the virtualization user (qemu-libvirtd) to access /dev/input devices
+  users.groups.input.members = [ "qemu-libvirtd" ];
+
+  # Set up 
   virtualisation.libvirtd = {
     enable = true;
 
@@ -59,18 +70,39 @@ in {
     onBoot = "ignore";
 
     qemu = {
-      package = pkgs.qemu_kvm;
-      ovmf.enable = true;
+      package = pkgs.qemu_kvm; ovmf.enable = true;
       swtpm.enable = true;
       runAsRoot = false;
+      verbatimConfig = ''
+      nvram = [ "/run/libvirt/nix-ovmf/OVMF_CODE.fd:/run/libvirt/nix-ovmf/OVMF_VARS.fd" ]
+      user = "qemu-libvirt"
+      group = "qemu-libvirt"
+      namespaces = []
+      cgroup_device_acl = [
+          "/dev/null", "/dev/full", "/dev/zero",
+          "/dev/random", "/dev/urandom",
+          "/dev/ptmx", "/dev/kvm", "/dev/kqemu",
+          "/dev/rtc","/dev/hpet",
+          "/dev/input/by-id/usb-Generic_Virtual_HID_00000004-event-kbd",
+          "/dev/input/by-id/usb-Generic_Virtual_HID_00000004-if01-event-mouse",
+          "/dev/input/by-id/usb-Logitech_USB_Receiver-if02-event-mouse",
+          "/dev/input/by-id/usb-Yiancar-Designs_NK65_0-event-kbd",
+          "/dev/input/by-id/usb-Yiancar-Designs_NK65_0-if02-event-kbd",
+          "/dev/input/by-id/usb-Yiancar-Designs_NK65_0-if02-event-mouse",
+      ]
+      clear_emulator_capabilities = 0
+      security_default_confined = 0
+      '';
     };
   };
 
-  security.pam.loginLimits = [
-    { domain = "*"; type = "soft"; item = "memlock"; value = "1048576000"; }
-    { domain = "*"; type = "hard"; item = "memlock"; value = "1048576000"; }
-  ];
+  # (Raw qemu) Increase RAM usage limits
+  #security.pam.loginLimits = [
+  #  { domain = "*"; type = "soft"; item = "memlock"; value = "1048576000"; }
+  #  { domain = "*"; type = "hard"; item = "memlock"; value = "1048576000"; }
+  #];
 
+  # Place UEFI roms at a static location
   environment.etc."ovmf/edk2-x86_64-secure-code.fd" = {
       source = config.virtualisation.libvirtd.qemu.package + "/share/qemu/edk2-x86_64-secure-code.fd";
   };
@@ -81,12 +113,12 @@ in {
       user = "libvirtd";
   };
 
-  # Allow passthrough of certain USB devices to QEMU
-  services.udev.extraRules = ''
-      SUBSYSTEM=="vfio", TAG+="uaccess"
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="8968", ATTR{idProduct}=="4e4b", TAG+="uaccess", GROUP="kvm"
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="046d", ATTR{idProduct}=="c539, TAG+="uaccess", GROUP="kvm"
-  '';
+  # (Raw qemu) Allow passthrough of certain USB devices to QEMU
+  #services.udev.extraRules = ''
+  #    SUBSYSTEM=="vfio", TAG+="uaccess"
+  #    SUBSYSTEM=="usb", ATTRS{idVendor}=="8968", ATTR{idProduct}=="4e4b", TAG+="uaccess", GROUP="kvm"
+  #    SUBSYSTEM=="usb", ATTRS{idVendor}=="046d", ATTR{idProduct}=="c539, TAG+="uaccess", GROUP="kvm"
+  #'';
 
   programs.dconf.enable = true;
 
