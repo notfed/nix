@@ -37,7 +37,7 @@ in {
       # Virtualization
       virt-manager libvirt libguestfs qemu_kvm
       # Sound
-      helvum bluez bluez-tools jack2Full jack_capture qjackctl 
+      helvum bluez bluez-tools pipewire
   ];
 
   # ---- Remoting ----
@@ -45,6 +45,7 @@ in {
   services.x2goserver.enable = true;
 
   # ---- Virtualization: START ----
+  
   
   # Assign GPU to vfio-pci driver
   boot.extraModprobeConfig = ''
@@ -74,9 +75,6 @@ in {
       swtpm.enable = true;
       runAsRoot = false;
       verbatimConfig = ''
-      nvram = [ "/run/libvirt/nix-ovmf/OVMF_CODE.fd:/run/libvirt/nix-ovmf/OVMF_VARS.fd" ]
-      user = "qemu-libvirt"
-      group = "qemu-libvirt"
       namespaces = []
       cgroup_device_acl = [
           "/dev/null", "/dev/full", "/dev/zero",
@@ -90,9 +88,13 @@ in {
           "/dev/input/by-id/usb-Yiancar-Designs_NK65_0-if02-event-kbd",
           "/dev/input/by-id/usb-Yiancar-Designs_NK65_0-if02-event-mouse",
       ]
-      clear_emulator_capabilities = 0
       security_default_confined = 0
       '';
+      /*
+      nvram = [ "/run/libvirt/nix-ovmf/OVMF_CODE.fd:/run/libvirt/nix-ovmf/OVMF_VARS.fd" ]
+      user = "qemu-libvirtd"
+      group = "qemu-libvirtd"
+      */
     };
   };
 
@@ -110,7 +112,7 @@ in {
   environment.etc."ovmf/edk2-i386-vars.fd" = {
       source = config.virtualisation.libvirtd.qemu.package + "/share/qemu/edk2-i386-vars.fd";
       mode = "0644";
-      user = "libvirtd";
+      user = "qemu-libvirtd";
   };
 
   # (Raw qemu) Allow passthrough of certain USB devices to QEMU
@@ -135,6 +137,12 @@ in {
   ##      ];
   ##    };
   ##  };
+  
+  # Share pipewire socket to libvirtd
+  # mkdir -m 700 /run/pipewire-share
+  # chown qemu-libvirtd: /run/pipewire-share
+  # touch /run/pipewire-share/pipewire-0
+  # mount --bind /run/user/1000/pipewire-0 /run/pipewire-share/pipewire-0
   
   # ---- Virtualization: END ----
  
@@ -188,12 +196,14 @@ in {
     jack.enable = true;
     pulse.enable = true;
     socketActivation = true;
+    #wireplumber.enable = false; # uh?
+    #media-session.enable = false; # uh?
     # No idea if this works:
-    config.pipewire = {
-        "context.properties" = {
-          "default.clock.allowed-rates" = [ 44100 48000 ];
-        };
-    };
+    #config.pipewire = {
+    #    "context.properties" = {
+    #      "default.clock.allowed-rates" = [ 44100 48000 ];
+    #    };
+    #};
   };
   hardware.pulseaudio.enable = false; # Or, set to true to use pulseaudio instead of pipewire
 
