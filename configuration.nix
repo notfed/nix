@@ -155,34 +155,26 @@ in {
 
 
 
+ 
 
-
-
-
-
-
-# ---- Shared pipewire socket ----
+# ---- Share pipewire socket ----
 systemd.tmpfiles.rules = [
   "d /run/pipewire-shared            0777 jay qemu-libvirtd"
   "f /run/pipewire-shared/pipewire-0 0777 root root"
 ];
-
-/* WORKS
 fileSystems."/run/pipewire-shared/pipewire-0" = {
   device = "/run/user/1000/pipewire-0";
   options = [ "bind" "noauto" "user" "rw" ];
   fsType = "none";
 };
-*/
-
-
-systemd.user.services."pipewire-shared-mount" = {
+systemd.user.services."pipewire-shared-socket" = {
   after = [ "pipewire.socket" ];
   requires = [ "pipewire.socket"];
-  wantedBy = [ "default.target" ];
+  bindsTo = [ "pipewire.socket" ]; 
+  wantedBy = [ "pipewire.socket" ];
   serviceConfig = {
-    ExecStart = "ln /run/user/1000/pipewire-0 /run/user/pipewire-shared/pipewire-0"; #"/run/wrappers/bin/mount /run/pipewire-shared/pipewire-0";
-    ExecStop = "rm /run/pipewire-shared/pipewire-0"; #"/run/wrappers/bin/umount /run/pipewire-shared/pipewire-0";
+    ExecStart = "/run/wrappers/bin/mount /run/pipewire-shared/pipewire-0";
+    ExecStop = "/run/wrappers/bin/umount /run/pipewire-shared/pipewire-0";
     RemainAfterExit = "yes";
   };
 };
@@ -323,8 +315,8 @@ systemd.user.services."pipewire-shared-mount" = {
     jack.enable = true;
     pulse.enable = true;
     socketActivation = true;
-    #wireplumber.enable = false; # uh?
-    #media-session.enable = false; # uh?
+    wireplumber.enable = false; # ?
+    media-session.enable = true;
     # No idea if this works:
     #config.pipewire = {
     #    "context.properties" = {
