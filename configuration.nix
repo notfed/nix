@@ -60,8 +60,9 @@ in {
   options kvm ignore_msrs=1
   '';
 
-  # Allow the virtualization user (qemu-libvirtd) to access /dev/input devices
+  # Allow the virtualization user (qemu-libvirtd) to access /dev/input devices, and sound
   users.groups.input.members = [ "qemu-libvirtd" ];
+  users.groups.pipewire.members = [ "jay" "qemu-libvirtd" ];
 
   # Set up 
   virtualisation.libvirtd = {
@@ -138,130 +139,6 @@ in {
   ##    };
   ##  };
   
-  # Share pipewire socket with libvirt
-
-  # Imperative (clone socket):
-  # mkdir -m 700 /run/pipewire-share
-  # chown qemu-libvirtd: /run/pipewire-share
-  # touch /run/pipewire-share/pipewire-0
-  # mount --bind /run/user/1000/pipewire-0 /run/pipewire-share/pipewire-0
-  #
-
-  # Imperative (setfacl):
-  #system.activationScripts.share_pipewire_socket_with_libvirt= ''
-  #  setfacl -m u:qemu-libvirtd:rx /run/user/1000
-  #'';
-  
-
-
-
- 
-
-# ---- Share pipewire socket ----
-systemd.tmpfiles.rules = [
-  "d /run/pipewire-shared            0777 jay qemu-libvirtd"
-  "f /run/pipewire-shared/pipewire-0 0777 root root"
-];
-fileSystems."/run/pipewire-shared/pipewire-0" = {
-  device = "/run/user/1000/pipewire-0";
-  options = [ "bind" "noauto" "user" "rw" ];
-  fsType = "none";
-};
-systemd.user.services."pipewire-shared-socket" = {
-  after = [ "pipewire.socket" ];
-  requires = [ "pipewire.socket"];
-  bindsTo = [ "pipewire.socket" ]; 
-  wantedBy = [ "pipewire.socket" ];
-  serviceConfig = {
-    ExecStart = "/run/wrappers/bin/mount /run/pipewire-shared/pipewire-0";
-    ExecStop = "/run/wrappers/bin/umount /run/pipewire-shared/pipewire-0";
-    RemainAfterExit = "yes";
-  };
-};
-
-/*
-systemd.user.services."pipewire-shared-mount" = {
-  after = [ "pipewire.socket" "-.mount" "run-user-1000.mount" ];
-  requires = [ "pipewire.socket" "-.mount" "run-user-1000.mount" ];
-  wantedBy = [ "default.target" ];
-  serviceConfig = {
-    ExecStart = "/run/wrappers/bin/mount /run/pipewire-shared/pipewire-0";
-    ExecStop = "/run/wrappers/bin/umount /run/pipewire-shared/pipewire-0";
-    RemainAfterExit = "yes";
-  };
-};
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-  systemd.mounts = [
-      {
-        after = [ "pipewire.socket" ];
-        what = "/run/user/1000/pipewire-0";
-        where = "/run/pipewire-shared/pipewire-0";
-        type = "none";
-        options = "bind,noauto,user,rw";
-      }
-  ];
-*/
-
-/*
-  systemd.services."pipewire-shared-mount" = {
-    after = [ "pipewire.socket" ];
-    script = ''
-      #!/bin/sh
-      exec 2>&1
-      ${pkgs.mount}/bin/mount --bind -o "rw,user=jay" /run/user/1000/pipewire-0 /run/pipewire-shared/pipewire-0
-    '';
-  };
-*/
-
-/*
-  systemd.user.services."pipewire-shared-mount" = {
-    after = [ "pipewire.socket" ];
-    requires = [ "pipewire.socket" ];
-    script = ''
-      #!/bin/sh
-      exec 2>&1
-      echo "pipewire-shared-mount: start"
-      echo "ls:"
-      ls -lgd {/run/user/1000/pipewire-0,/run/pipewire-shared,/run/pipewire-shared/pipewire-0}
-      echo "fstab:"
-      ${pkgs.coreutils}/bin/cat /etc/fstab
-      echo -n "whoami: "; ${pkgs.coreutils}/bin/whoami
-      echo -n "id: "; ${pkgs.coreutils}/bin/id
-      ${pkgs.mount}/bin/mount --bind -o "rw,user=jay" /run/user/1000/pipewire-0 /run/pipewire-shared/pipewire-0
-      echo "pipewire-shared-mount: end"
-    '';
-    preStop = ''
-    ${pkgs.mount}/bin/umount /run/pipewire-shared/pipewire-0
-    '';
-  };
-  */
-
-# [Unit]
-# Requires=pipewire.socket
-# After=pipewire.socket
-# 
-# [Service]
-# ExecStart=/run/wrappers/bin/mount /run/pipewire-shared/pipewire-0
-# ExecStop=/run/wrappers/bin/umount /run/pipewire-shared/pipewire-0
-# RemainAfterExit=yes
-# 
-# [Install]
-# WantedBy=default.target
-  
   # ---- Virtualization: END ----
  
   # Bug fix https://github.com/NixOS/nixpkgs/issues/43989
@@ -315,8 +192,9 @@ systemd.user.services."pipewire-shared-mount" = {
     jack.enable = true;
     pulse.enable = true;
     socketActivation = true;
-    wireplumber.enable = false; # ?
+    wireplumber.enable = false;
     media-session.enable = true;
+    systemWide = true;
     # No idea if this works:
     #config.pipewire = {
     #    "context.properties" = {
@@ -338,9 +216,6 @@ systemd.user.services."pipewire-shared-mount" = {
 
   # Pre-set user icon
   system.activationScripts = {
-    okayAs = ''
-    touch /tmp/okay-as
-    '';
     gnomeSessionForJay = {
       text = ''
       mkdir -p /var/lib/AccountsService/icons/
