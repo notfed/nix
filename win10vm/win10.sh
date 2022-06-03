@@ -25,11 +25,10 @@ OVMF_CODE=/etc/ovmf/edk2-x86_64-secure-code.fd
 KEYBOARD_EVDEV_DEVICE=/dev/input/by-id/usb-Yiancar-Designs_NK65_0-event-kbd
 MOUSE_EVDEV_DEVICE=/dev/input/by-id/usb-Logitech_USB_Receiver-if02-event-mouse
 
-export PIPEWIRE_RUNTIME_DIR=/run/user/1000
+export PIPEWIRE_RUNTIME_DIR=/run/pipewire-share
 export PIPEWIRE_LATENCY="512/44100"
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/run/current-system/sw/lib/pipewire
-#/nix/store/6kjpfn3gx76sar05k18my2jfrs221pra-qemu-7.0.0/bin/qemu-system-x86_64 
 qemu-system-x86_64 \
     -name $VM_NAME,process=$VM_NAME \
     -machine type=q35,accel=kvm \
