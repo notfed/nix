@@ -1,21 +1,20 @@
 { config, pkgs, ... }:
+
 let
   settings = import ./config;
   editor = "vim";
-
 in {
+
   # -------- Packages --------
 
   nixpkgs.config.allowUnfree = true;
   home.packages = with pkgs; [
 
-    kakasi
-
     # ---- Dev Tools ---- 
     git
     vscode jetbrains.clion jetbrains.idea-ultimate
-    clang-tools automake autoconf gnutar gzip gnumake binutils-unwrapped
-    gawk gnused gnugrep cmake gdb gnumake  coreutils-full
+    automake autoconf gnutar gzip gnumake binutils-unwrapped
+    gawk gnused gnugrep cmake gdb gnumake coreutils-full
     rustup
     nodejs
     python39Full python39Packages.pylint
@@ -37,6 +36,7 @@ in {
     byobu tmux screen
     hyperfine
     dos2unix
+    bubblewrap
 
     # ---- Desktop ----
     dropbox-cli cryptomator
@@ -46,6 +46,8 @@ in {
     gnome.dconf-editor
     feh
     vlc
+    # ---- Games ----
+    steam
   ];
   programs.home-manager.enable = true;
   programs.autojump.enable = true;

@@ -4,7 +4,8 @@
 
 { config, pkgs, ... }:
 
-let gpu_passthrough_pci_ids = "10de:1b81,10de:10f0";
+let 
+  gpu_passthrough_pci_ids = "10de:1b81,10de:10f0";
 in {
   imports =
     [ 
@@ -12,7 +13,10 @@ in {
       	./hardware-configuration.nix
       	./boot.nix
         ./luksroot.nix
+        (fetchTarball "https://github.com/msteen/nixos-vscode-server/tarball/master")
     ];
+
+  services.vscode-server.enable = true; 
 
   boot.kernelParams = [ "intel_iommu=on" "iommu=pt" "pcie_acs_override=downstream" "vfio-pci.ids=${gpu_passthrough_pci_ids}" ];
   boot.kernelModules = [ "vfio" "vfio-pci" "vfio_iommu_type1" "kvm-intel" "vhost-net" ];
@@ -23,11 +27,14 @@ in {
   #system.autoUpgrade.channel = "https://nixos.org/channels/nixos-22.05/";
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
+      # Nix-specific
+      nix-index nix-tree
       # Misc
+      vim exa
       wget file
       zsh
       dconf
-      x2goserver
+      usbutils pciutils
       # Gnome
       gnome.gnome-packagekit
       # Web
@@ -35,17 +42,26 @@ in {
       # Filesystems
       gparted parted cryptsetup
       # Virtualization
-      virt-manager libvirt libguestfs qemu_kvm
+      virt-manager libvirt libguestfs qemu_kvm OVMFFull
       # Sound
-      helvum bluez bluez-tools pipewire
+      helvum pipewire
+      bluez bluez-tools
+      # Networking/Remoting
+      wireguard-tools 
+      xfce.xfce4-session xfce.xfdesktop
+      x2goserver openssh
+      # Python
+      python38Full
   ];
 
   # ---- Remoting ----
   services.sshd.enable = true;
+  services.xrdp.enable = true;
+  services.xrdp.defaultWindowManager = "xfce4-session";
   services.x2goserver.enable = true;
+  services.xserver.desktopManager.xfce.enable = true;
 
   # ---- Virtualization: START ----
-  
   
   # Assign GPU to vfio-pci driver
   boot.extraModprobeConfig = ''
@@ -181,8 +197,6 @@ in {
   services.printing.enable = true;
 
   # Enable sound (pipewire)
-  hardware.bluetooth.enable = true;
-  hardware.bluetooth.hsphfpd.enable = true;
   sound.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -203,6 +217,16 @@ in {
     #};
   };
   hardware.pulseaudio.enable = false; # Or, set to true to use pulseaudio instead of pipewire
+
+  # Bluetooth Headset
+  hardware.bluetooth.enable = true;
+  hardware.bluetooth.hsphfpd.enable = true;
+
+  #hardware.bluetooth.settings = {
+  #  General = {
+  #    Enable = "Source,Sink,Media,Socket";
+  #  };
+  #};
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jay = {
