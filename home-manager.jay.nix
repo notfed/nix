@@ -46,8 +46,13 @@ in {
     gnome.dconf-editor
     feh
     vlc
+    thunar-archive-plugin
+
     # ---- Games ----
     steam
+
+    # ---- Design ----
+    inkscape
   ];
   programs.home-manager.enable = true;
   programs.autojump.enable = true;

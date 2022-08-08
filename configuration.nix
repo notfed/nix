@@ -2,26 +2,43 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ 
+  config, 
+  pkgs ? import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/955d1a6dde9862822fbb0f2d6be9bfa51fdbc689.tar.gz") {}, 
+  ... 
+}:
 
 let 
   gpu_passthrough_pci_ids = "10de:1b81,10de:10f0";
+  nixpkgs-tars = "https://github.com/NixOS/nixpkgs/archive/";
 in {
-  imports =
-    [ 
-        # Include the results of the hardware scan.
-      	./hardware-configuration.nix
-      	./boot.nix
-        ./luksroot.nix
-        (fetchTarball "https://github.com/msteen/nixos-vscode-server/tarball/master")
-    ];
+  disabledModules = [ 
+    "system/boot/luksroot.nix" # LUKS patch
+    "services/desktops/pipewire/pipewire.nix" # Pipewire patch pr176561
+  ];
+
+  imports = 
+    let 
+      pr176561 = fetchTarball "https://github.com/nixos/nixpkgs/archive/955d1a6dde9862822fbb0f2d6be9bfa51fdbc689.tar.gz";
+    in 
+  [ 
+    ./hardware-configuration.nix # Include the results of the hardware scan.
+    ./boot.nix # Boot partition layout
+    ./luksroot.nix # LUKS patch
+    (fetchTarball "https://github.com/msteen/nixos-vscode-server/tarball/master")
+    "${pr176561}/nixos/modules/services/desktops/pipewire/pipewire.nix"
+  ];
+
+  #nixpkgs.pkgs = import (fetchTarball "${nixpkgs-tars}955d1a6dde9862822fbb0f2d6be9bfa51fdbc689.tar.gz")# { config = config.nixpkgs.config; }
 
   services.vscode-server.enable = true; 
 
   boot.kernelParams = [ "intel_iommu=on" "iommu=pt" "pcie_acs_override=downstream" "vfio-pci.ids=${gpu_passthrough_pci_ids}" ];
   boot.kernelModules = [ "vfio" "vfio-pci" "vfio_iommu_type1" "kvm-intel" "vhost-net" ];
 
-  disabledModules = [ "system/boot/luksroot.nix" ];
+  # Patches applied:
+  # https://github.com/NixOS/nixpkgs/pull/176194
+  # https://github.com/NixOS/nixpkgs/issues/176484
 
   # Packages
   #system.autoUpgrade.channel = "https://nixos.org/channels/nixos-22.05/";
@@ -50,9 +67,16 @@ in {
       wireguard-tools 
       xfce.xfce4-session xfce.xfdesktop
       x2goserver openssh
+      protonvpn-cli
       # Python
       python38Full
+      # Printing
+      hplip
+      # Dev
+      gcc
   ];
+
+  services.flatpak.enable = true;
 
   # ---- Remoting ----
   services.sshd.enable = true;
@@ -77,8 +101,22 @@ in {
   '';
 
   # Allow the virtualization user (qemu-libvirtd) to access /dev/input devices, and sound
-  users.groups.input.members = [ "qemu-libvirtd" ];
+  users.groups.input.members = [ "jay" "qemu-libvirtd" ];
   users.groups.pipewire.members = [ "jay" "qemu-libvirtd" ];
+
+  # TODO: Testing?
+  #users.users.qemu-libvirtd = { home = "/home/qemu-libvirtd"; createHome = true; };
+  #users.users.polkituser = { home = "/home/polkituser"; createHome = true; };
+  #users.users.rtkit = { home = "/home/rtkit"; createHome = true; };
+  #users.users.systemd-journal-gateway = { home = "/home/systemd-journal-gateway"; createHome = true; };
+  #users.users.systemd-coredump = { home = "/home/systemd-coredump"; createHome = true; };
+  #users.users.systemd-network = { home = "/home/systemd-network"; createHome = true; };
+  #users.users.systemd-resolve = { home = "/home/systemd-resolve"; createHome = true; };
+  #users.users.systemd-timesync = { home = "/home/systemd-timesync"; createHome = true; };
+  #users.users.nm-openvpn = { home = "/home/nm-openvpn"; createHome = true; };
+  #users.users.xrdp = { home = "/home/xrdp"; createHome = true; };
+  #users.users.nm-iodine = { home = "/home/nm-iodine"; createHome = true; };
+  #users.users.avahi = { home = "/home/avahi"; createHome = true; };
 
   # Set up 
   virtualisation.libvirtd = {
@@ -104,6 +142,7 @@ in {
           "/dev/input/by-id/usb-Yiancar-Designs_NK65_0-event-kbd",
           "/dev/input/by-id/usb-Yiancar-Designs_NK65_0-if02-event-kbd",
           "/dev/input/by-id/usb-Yiancar-Designs_NK65_0-if02-event-mouse",
+          "/dev/input/by-id/usb-ZMK_Project_BT65_89C948744C9A094C-event-kbd"
       ]
       security_default_confined = 0
       '';
@@ -141,6 +180,11 @@ in {
 
   programs.dconf.enable = true;
 
+  
+  # ---- Virtualization: END ----
+
+  # ---- Patches: START ----
+
   ### ACS Override Patch (not needed, because already included in zen kernel)
   ##nixpkgs.config.packageOverrides = pkgs: {
   ##    linux_5_15 = pkgs.linux_5_15.override {
@@ -154,8 +198,8 @@ in {
   ##      ];
   ##    };
   ##  };
-  
-  # ---- Virtualization: END ----
+
+  # ---- Patches: END ----
  
   # Bug fix https://github.com/NixOS/nixpkgs/issues/43989
   environment.etc."libblockdev/conf.d/00-default.cfg".source = "${pkgs.libblockdev}/etc/libblockdev/conf.d/00-default.cfg";
@@ -179,6 +223,9 @@ in {
   networking.hostName = "nixos";
   networking.interfaces.enp0s31f6.wakeOnLan.enable = true;
 
+  # Networking (for VMs)
+  bridges.br0.interfaces = [ "enp0s31f6" ];
+
   # Internationalisation
   i18n.defaultLocale = "en_US.UTF-8";
   
@@ -195,6 +242,7 @@ in {
   
   # Enable CUPS to print documents.
   services.printing.enable = true;
+  services.printing.drivers = [ pkgs.hplip ];
 
   # Enable sound (pipewire)
   sound.enable = true;
@@ -206,9 +254,9 @@ in {
     jack.enable = true;
     pulse.enable = true;
     socketActivation = true;
-    wireplumber.enable = false;
-    media-session.enable = true;
-    systemWide = true;
+    wireplumber.enable = true;
+    media-session.enable = false;
+    #systemWide = true;
     # No idea if this works:
     #config.pipewire = {
     #    "context.properties" = {
