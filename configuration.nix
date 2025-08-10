@@ -16,7 +16,7 @@
   disabledModules = [ "system/boot/luksroot.nix" ];
 
   # Packages
-  system.autoUpgrade.channel = "https://nixos.org/channels/nixos-21.05/";
+  system.autoUpgrade.channel = "https://nixos.org/channels/nixos-25.05/";
   nixpkgs.config.allowUnfree = true;
   environment.systemPackages = with pkgs; [
       gparted parted cryptsetup
@@ -60,13 +60,10 @@
 
   # Enable Nvidia drivers
   services.xserver.videoDrivers = [ "nvidia" ];
+  hardware.nvidia.open = false;
   
   # Enable CUPS to print documents.
   services.printing.enable = true;
-
-  # Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.jay = {
@@ -77,6 +74,7 @@
       extraGroups = [ "wheel" ];
   };
   users.defaultUserShell = pkgs.zsh;
+  programs.zsh.enable = true;
 
   # Pre-set user icon
   system.activationScripts = {
@@ -97,24 +95,24 @@
   environment.shells = with pkgs; [ bashInteractive zsh ];
 
   # GNOME Exclusions
-  environment.gnome.excludePackages = [ pkgs.gnome.totem pkgs.gnome-tour ];
+  environment.gnome.excludePackages = [ pkgs.totem pkgs.gnome-tour ];
 
-  # GNOME login screen patch
-  nixpkgs = {
-    overlays = [
-      (self: super: {
-        gnome = super.gnome.overrideScope' (selfg: superg: {
-          gnome-shell = superg.gnome-shell.overrideAttrs (old: {
-            patches = (old.patches or []) ++ [
-              (pkgs.substituteAll {
-                src = ./patches/gnome-shell_3.38.3-3ubuntu1_3.38.3-3ubuntu2.patch;
-              })
-            ];
-          });
-        });
-      })
-    ];
-  };
+  # GNOME login screen patch (TODO: fix this)
+  #nixpkgs = {
+  #  overlays = [
+  #    (self: super: {
+  #      gnome = super.gnome.overrideScope (selfg: superg: {
+  #        gnome-shell = superg.gnome-shell.overrideAttrs (old: {
+  #          patches = (old.patches or []) ++ [
+  #            (pkgs.substituteAll {
+  #              src = ./patches/gnome-shell_3.38.3-3ubuntu1_3.38.3-3ubuntu2.patch;
+  #            })
+  #          ];
+  #        });
+  #      });
+  #    })
+  #  ];
+  #};
 
   services.xserver.desktopManager.gnome.extraGSettingsOverrides = ''
   [com.ubuntu.login-screen]
